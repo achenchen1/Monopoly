@@ -560,4 +560,3 @@ tiles = [Go("GO"),
          Colours("Boardwalk", 39, 400, 50)]
 
 banker.list_all()
-
