@@ -4,7 +4,7 @@ import math
 
 class Player:
     player_list = {}
-    
+
     def __init__(self, name, money=1500):
         self.name = name
         self.money = money
@@ -12,17 +12,17 @@ class Player:
         self.jail_counter = 0
         self.position = 0
         # Colours, Utilities, Railroads
-        self.properties = [[], [], []]
+        self.properties = [{}, [], []]
         self.jail_free = 0
         Player.player_list[self.name] = self
 
     def list_all(self):
         for x in self.properties[0]:
-            print(x.name + ' '*(32-len(x.name)), end="")
-            if x.houses > 0:
-                print(str(x.houses) + " houses")
-            elif x.hotel > 0:
-                print(str(x.hotel) + " hotel")
+            print(x + ' ' * (32 - len(x)), end="")
+            if self.properties[0][x].houses > 0:
+                print(str(self.properties[0][x].houses) + " houses", end="")
+            elif self.properties[0][x].hotel > 0:
+                print(str(self.properties[0][x].hotel) + " hotel", end="")
             print("")
         print("\n")
         for x in self.properties[1]:
@@ -103,7 +103,8 @@ class Player:
                             print(str(x.hotel) + " hotel")
                         print("")
 
-                awef
+                property_selling = input("From which property are you selling?")
+
             elif choice.lower() == "mortgage":
                 for x in self.properties[0]:
                     if x.houses == 0:
@@ -118,7 +119,6 @@ class Player:
                 for x in Player.player_list:
                     print(x.name)
 
-
     def transaction(self, value, partner, trusted=False):
         if not trusted:
             if self.money + value >= 0 and Player.player_list[partner] - value >= 0:
@@ -131,7 +131,7 @@ class Player:
         else:
             self.money += value
             Player.player_list[partner].money -= value
-            
+
             if self.money < 0:
                 self.debt()
             elif Player.player_list[partner].money < 0:
@@ -158,7 +158,7 @@ class Go(Tile):
         player.transaction(200, "the Bank")
 
 
-class CommunityChest(Tile): 
+class CommunityChest(Tile):
     cards_list = {0: "Advance to \"GO\"", 1: "Bank error in your favour.", 2: "Doctor's fees.", 3: "Sale of stock.",
                   4: "Get out of jail free.", 5: "Go to jail.", 6: "Holiday fund matures.", 7: "Income tax refund.",
                   8: "It's your birthday.", 9: "Life insurance matures.", 10: "Hospital fees.", 11: "School fees.",
@@ -207,7 +207,7 @@ class CommunityChest(Tile):
             for x in range(0, len(player.properties[0])):
                 houses += player.properties[0][x].houses
                 hotels += player.properties[0][x].hotel
-            player.transaction(-40*houses-115*hotels, "the Bank", True)
+            player.transaction(-40 * houses - 115 * hotels, "the Bank", True)
         elif card == 14:
             player.transaction(10, "the Bank", True)
         elif card == 15:
@@ -286,8 +286,9 @@ class Chance(Tile):
 
 
 class Property(Tile):
-    def __init__(self, name, position, value, rent):
+    def __init__(self, name, position, value, rent, prop_type):
         self.position = position
+        self.prop_type = prop_type
         Tile.__init__(self, name)
         self.player = banker
         self.value = value
@@ -297,10 +298,10 @@ class Property(Tile):
 
     def mortgage(self):
         if not self.mortgaged:
-            self.player.transaction(self.value/2, "the Bank")
+            self.player.transaction(self.value / 2, "the Bank")
             print("Mortgaged " + self.name)
         else:
-            if self.player.transaction(math.ceil((self.value/2)*1.1), "the Bank"):
+            if self.player.transaction(math.ceil((self.value / 2) * 1.1), "the Bank"):
                 print("Un-mortgaged" + self.name)
             else:
                 print(self.name + "remains mortgaged")
@@ -315,6 +316,16 @@ class Property(Tile):
             if not self.mortgaged:
                 player.transaction(self.rent, self.player, True)
 
+    def bank_transfer(self, player):
+        if self.prop_type > 0:
+            self.player.properties[self.prop_type].remove(self)
+            self.player = player
+            player.properties[self.prop_type].append(self)
+        elif self.prop_type == 0:
+            banker.properties[0].remove(self.name)
+            self.player = player
+            player.properties[0][self.name] = self
+
     def sell(self, player):
         option = input("Buy or auction property?")
         if option.lower() == "buy":
@@ -323,9 +334,7 @@ class Property(Tile):
                 self.sell(player)
             else:
                 player.transaction(-self.value, "the Bank")
-                self.player.properties.remove(self)
-                self.player = player
-                player.properties.append(self)
+                self.bank_transfer(player)
         elif option.lower() == "auction":
             bid = 1
             player_list_copy = list(Player.player_list)
@@ -345,31 +354,30 @@ class Property(Tile):
                         print("Invalid input. Try again.")
                         player_num -= 1
             player_list_copy[0].transaction(-bid, "the Bank")
-            self.player.properties.remove(self)
-            self.player = player
-            player.properties.append(self)
+            self.bank_transfer(player)
         else:
             print("Please choose to buy or auction.")
             self.sell(player)
 
 
 class Colours(Property):
+    # order of groups is brown, light blue, pink, orange, yellow, red, green, (dark) blue
+    groups = [[], [], [], [], [], [], [], []]
+
     def __init__(self, name, position, value, rent):
-        Property.__init__(self, name, position, value, rent)
+        Property.__init__(self, name, position, value, rent, 0)
+        self.const_rent = self.rent
         self.houses = 0
         self.hotel = 0
         self.set = False
         self.change = True
-        banker.properties[0].append(self)
-
-        if value <= 120:
-            self.house_value = 50
-        elif value <= 200:
-            self.house_value = 100
-        elif value <= 280:
-            self.house_value = 150
-        else:
+        self.group = math.floor(self.position / 5)
+        banker.properties[0][self.name] = self
+        self.house_value = math.floor((self.value + 20) / 80) * 50
+        if self.house_value == 250:
+            # Boardwalk is the only exception, as it yields 250
             self.house_value = 200
+        Colours.groups[self.group].append(self)
 
     def add_house(self):
         if self.hotel == 0:
@@ -392,103 +400,114 @@ class Colours(Property):
     def sell_house(self):
         if self.hotel > 0:
             self.hotel -= 1
-            self.player.transaction(self.house_value/2, "the Bank")
+            self.player.transaction(self.house_value / 2, "the Bank")
             print("One hotel sold.")
             self.change = True
         elif self.houses > 0:
-
+            self.houses -= 1
+            self.player.transaction(self.house_value / 2, "the Bank")
+            print("One house sold.")
         else:
             print("No houses to sell. None sold.")
 
     def mortgage(self):
         if self.houses == 0 and self.hotel == 0:
             Property.mortgage(self)
+            self.rent = 0
         else:
             print("You own houses or hotels on this property. You must sell those before mortgaging.")
 
+    def check_set(self):
+        player = self.player
+        for x in Colours.groups[self.group]:
+            if x.player != player:
+                self.set = False
+                return
+
     def action(self, player):
-        if self.player != player:
+        if self.player != banker:
+            self.check_set()
             if self.change:
                 self.rent = self.set_rent()
                 self.change = not self.change
-            Property.action(self, player)
+        Property.action(self, player)
 
     def set_rent(self):
         if self.houses == 0:
             self.change = not self.change
-            return self.rent*2 if self.set else self.rent
+            return self.const_rent * 2 if self.set else self.const_rent
         elif self.houses == 1:
             if self.value == 320:
                 # Pennsylvania Ave is the one outlier
                 return 150
             else:
-                return self.rent*5
+                return self.const_rent * 5
         elif self.houses == 2:
             if self.value == 120:
-                return self.rent*25/2
+                return self.const_rent * 25 / 2
             elif self.value == 320:
-                return self.value*225/14
+                return self.value * 225 / 14
             elif 180 <= self.value < 240 or self.value == 350:
-                return math.floor(self.rent*10/7)*10
+                return math.floor(self.const_rent * 10 / 7) * 10
             else:
-                return self.value*15
+                return self.value * 15
         elif self.houses == 3:
             if self.value == 120 or self.value == 200 or self.value == 240:
-                return self.rent*37.5
+                return self.const_rent * 37.5
             elif self.value < 120 or self.value == 140:
-                return self.rent*45
+                return self.const_rent * 45
             elif self.value <= 280:
-                return math.ceil(self.value*85/1400)*50
+                return math.ceil(self.value * 85 / 1400) * 50
             elif self.value <= 400:
-                return math.floor(self.value*14/400-1)*100
+                return math.floor(self.value * 14 / 400 - 1) * 100
         elif self.houses == 4:
             if self.value <= 60:
-                return self.value*80
+                return self.value * 80
             elif self.value <= 120:
-                return self.value/2*5+150
+                return self.value / 2 * 5 + 150
             elif self.value <= 140:
                 return 625
             elif self.value <= 180:
-                return math.floor(self.value*35/400)*50
+                return math.floor(self.value * 35 / 400) * 50
             elif self.value == 200:
-                return self.value*4
+                return self.value * 4
             elif self.value <= 280:
-                return 5/2*self.value+325
+                return 5 / 2 * self.value + 325
             elif self.value <= 320:
-                return 5*self.value-400
+                return 5 * self.value - 400
             elif self.value <= 400:
-                return 8*self.value-1500
+                return 8 * self.value - 1500
         elif self.hotel == 1:
             if self.name == "Mediterranean Avenue":
                 return 250
             elif self.value <= 120:
-                return 5/2*self.value+300
+                return 5 / 2 * self.value + 300
             elif self.value <= 160:
-                return 7.5*self.value-300
+                return 7.5 * self.value - 300
             elif self.value <= 280:
-                return 5/2*self.value+500
+                return 5 / 2 * self.value + 500
             elif self.value <= 320:
-                return 25/4*self.value-600
+                return 25 / 4 * self.value - 600
             elif self.value <= 400:
-                return 10*self.value-2000
+                return 10 * self.value - 2000
 
 
 class Utilities(Property):
     def __init__(self, name, position, value):
-        Property.__init__(self, name, position, value, 0)
+        Property.__init__(self, name, position, value, 0, 1)
         self.set = False
         self.rent = 0
         banker.properties[1].append(self)
 
     def action(self, player):
         if self.player != player:
-            self.rent = (Dice.roll[0] + Dice.roll[1])*(4 if self.set else 10)
+            self.rent = (Dice.roll[0] + Dice.roll[1]) * (4 if self.set else 10)
             Property.action(self, player)
 
 
 class Railroad(Property):
     def __init__(self, name, position):
-        Property.__init__(self, name, position, 200, 25)
+        Property.__init__(self, name, position, 200, 25, 2)
         banker.properties[2].append(self)
 
     def action(self, player):
@@ -516,7 +535,6 @@ class Dice:
 
 
 banker = Player("the Bank", 1000000)
-
 
 tiles = [Go("GO"),
          Colours("Mediterranean Avenue", 1, 60, 2),
