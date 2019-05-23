@@ -94,8 +94,10 @@ class Player:
             print("Money = " + str(self.money))
             choice = input("Sell, mortgage, trade with another player, or declare bankruptcy?")
             if choice.lower() == "sell":
+                property_selling_count = 0
                 for x in self.properties[0]:
                     if x.houses > 0 or x.hotel > 0:
+                        property_selling_count += 1
                         print(x.name + ' ' * (32 - len(x.name)), end="")
                         if x.houses > 0:
                             print(str(x.houses) + " houses")
@@ -103,20 +105,57 @@ class Player:
                             print(str(x.hotel) + " hotel")
                         print("")
 
-                property_selling = input("From which property are you selling?")
-
+                if property_selling_count > 0:
+                    property_selling = input("Select property to sell from.").title()
+                    try:
+                        self.properties[0][property_selling].sell_house()
+                    except KeyError:
+                        print("Property name invalid or unowned.")
             elif choice.lower() == "mortgage":
                 for x in self.properties[0]:
-                    if x.houses == 0:
-                        print(x.name)
+                    if self.properties[0][x].houses == 0:
+                        print(x)
                 print("\n")
                 for x in self.properties[1]:
                     print(x.name)
                 print("\n")
                 for x in self.properties[2]:
                     print(x.name)
+
+                property_mortgaging = input("Select property to mortgage.").title()
+                if property_mortgaging == "Electric Company" or property_mortgaging == "Water Works":
+                    if len(self.properties[1]) == 1:
+                        if property_mortgaging == self.properties[1][0].name:
+                            self.properties[1][0].mortgage()
+                            print(property_mortgaging + " mortgaged.")
+                        else:
+                            print("Property not owned.")
+                    elif len(self.properties[1]) == 2:
+                        for x in range(2):
+                            if property_mortgaging == self.properties[1][x].name:
+                                self.properties[1][x].mortgage()
+                                print(property_mortgaging + " mortgaged.")
+                    else:
+                        print("Property not owned.")
+                elif property_mortgaging.find("Railroad") != -1 or property_mortgaging.find("Line") != -1:
+                    found = False
+                    for x in self.properties[2]:
+                        if x.name == property_mortgaging:
+                            x.mortgage()
+                            found = True
+                    if found:
+                        print(property_mortgaging + " mortgaged.")
+                    else:
+                        print("Property not owned.")
+                else:
+                    try:
+                        self.properties[0][property_mortgaging].mortgage()
+                        print(property_mortgaging + " mortgaged.")
+                    except KeyError:
+                        print("Property not owned.")
+
             elif choice.lower() == "trade":
-                for x in Player.player_list:
+            for x in Player.player_list:
                     print(x.name)
 
     def transaction(self, value, partner, trusted=False):
@@ -322,7 +361,7 @@ class Property(Tile):
             self.player = player
             player.properties[self.prop_type].append(self)
         elif self.prop_type == 0:
-            banker.properties[0].remove(self.name)
+            del banker.properties[0][self.name]
             self.player = player
             player.properties[0][self.name] = self
 
@@ -408,7 +447,7 @@ class Colours(Property):
             self.player.transaction(self.house_value / 2, "the Bank")
             print("One house sold.")
         else:
-            print("No houses to sell. None sold.")
+            print("No houses/hotel to sell. None sold.")
 
     def mortgage(self):
         if self.houses == 0 and self.hotel == 0:
