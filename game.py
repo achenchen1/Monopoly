@@ -24,6 +24,8 @@ class Player:
                 print(str(self.properties[0][x].houses) + " houses", end="")
             elif self.properties[0][x].hotel > 0:
                 print(str(self.properties[0][x].hotel) + " hotel", end="")
+            elif self.properties[0][x].mortgaged:
+                print("(mortgaged)")
             print("")
         print("\n")
         for x in self.properties[1]:
@@ -39,7 +41,120 @@ class Player:
         tiles[self.position].action(self)
 
     def trade(self):
+        for x in Player.player_list:
+            print(x)
+        try:
+            trade_player = Player.player_list[input("Which player to trade with?\n")]
+            print("Owned properties:")
+            self.list_all()
+            print("$" + str(self.money))
+            print(trade_player + "\'s properties:")
+            self.list_all()
+            print("$" + str(self.money))
+            
+            choices = input("Offering properties (P), money (M) or Jail-free card (J)? Multiple letters possible.\n")
+            # Two arrays of offer/trade, with property names, money, get out of jail free cards.
+            assets = [[[], 0, 0], [[], 0, 0]]
+            players = [self, trade_player]
+            for loop in range(2):
+                # Colours
+                if choices.lower().find("p") != -1:
+                    count = int(input("Number of properties?\n"))
+                    for x in range(count):
+                        property_name = input("Enter a property name.\n")
+                        if players[loop].variable_prop_owned(property_name, True) != -1:
+                            assets[loop][0].append(property_name.title())
+                # Money
+                if choices.lower().find("m") != -1:
+                    money = int(input("How much money?\n"))
+                    if money <= players[loop].money:
+                        assets[loop][1] = money
+                    else:
+                        print("Not enough money.")
+                # Jail card
+                if choices.lower().find("j") != -1:
+                    if players[loop].jail_free > 0:
+                        assets[loop][2] += 1
+                    else:
+                        print("Not owned.")
 
+            if trade_player.accept_trade():
+                for prop_name in assets[0][0]:
+                    selector = self.variable_prop_owned(prop_name)
+                    if selector == 0:
+                        self.properties[0][prop_name].player = trade_player
+                    else:
+                        for x in self.properties[selector]:
+                            if x.name == prop_name:
+                                x.player = trade_player
+                self.money -= assets[0][1]
+                self.money += assets[1][1]
+                trade_player.money += assets[0][1]
+                trade_player.money -= assets[1][1]
+                self.jail_free -= assets[0][2]
+                self.jail_free += assets[1][2]
+                trade_player.jail_free += assets[0][2]
+                trade_player.jail_free -= assets[0][2]
+
+        except KeyError:
+            print("Player does not exist.")
+            return False
+    
+    @staticmethod
+    def accept_trade(initiator, offered, trade):
+        print(initiator.name + "trades:")
+        for x in offered[0]:
+            print(x)
+        print("$" + str(offered[1]))
+        if offered[2] > 0:
+            print(str(offered[2]) + " get out of jail free cards.")
+
+        print("for:")
+        for x in trade[0]:
+            print(x)
+        print("$" + str(trade[1]))
+        if trade[2] > 0:
+            print(str(trade[2]) + " get out of jail free cards.")
+
+        return True if input("Accept trade? y/n \n").lower() == "y" else False
+    
+    def variable_prop_owned(self, variable_prop, house=False):
+        if variable_prop == "Electric Company" or variable_prop == "Water Works":
+            if len(self.properties[1]) == 1:
+                if variable_prop == self.properties[1][0].name:
+                    self.properties[1][0].mortgage()
+                    return 1
+                else:
+                    print("Property not owned.")
+                    return -1
+            elif len(self.properties[1]) == 2:
+                for x in range(2):
+                    if variable_prop == self.properties[1][x].name:
+                        return 1
+            else:
+                print("Property not owned.")
+                return -1
+        elif variable_prop.find("Railroad") != -1 or variable_prop.find("Line") != -1:
+            found = False
+            for x in self.properties[2]:
+                if x.name == variable_prop:
+                    found = True
+            if found:
+                return 2
+            else:
+                print("Property not owned.")
+                return -1
+        else:
+            if variable_prop in self.properties[0]:
+                if house:
+                    if self.properties[0][variable_prop].houses == 0 and self.properties[0][variable_prop].hotel == 0:
+                        return 0
+                    else:
+                        return -1
+                return 0
+            else:
+                print("Property not owned.")
+                return -1
 
     def roll_dice(self, counter=0):
         if not self.jail:
@@ -59,10 +174,10 @@ class Player:
                     self.move_action()
             else:
                 self.move_action()
-                if initial_position > self.position > 0 and self.jail == False:
+                if initial_position > self.position > 0 and not self.jail:
                     Go.action(self)
         else:
-            choice = input("Roll for doubles (R), pay fine (F), or use card (C).")
+            choice = input("Roll for doubles (R), pay fine (F), or use card (C).\n")
             if choice.lower == "r":
                 Dice.throw()
                 if Dice.roll[0] == Dice.roll[1]:
@@ -99,7 +214,7 @@ class Player:
     def debt(self):
         while self.money < 0:
             print("Money = " + str(self.money))
-            choice = input("Sell, mortgage, trade with another player, or declare bankruptcy?")
+            choice = input("Sell, mortgage, trade with another player, or declare bankruptcy?\n")
             if choice.lower() == "sell":
                 property_selling_count = 0
                 for x in self.properties[0]:
@@ -113,7 +228,7 @@ class Player:
                         print("")
 
                 if property_selling_count > 0:
-                    property_selling = input("Select property to sell from.").title()
+                    property_selling = input("Select property to sell from.\n").title()
                     try:
                         self.properties[0][property_selling].sell_house()
                     except KeyError:
@@ -129,37 +244,15 @@ class Player:
                 for x in self.properties[2]:
                     print(x.name)
 
-                property_mortgaging = input("Select property to mortgage.").title()
-                if property_mortgaging == "Electric Company" or property_mortgaging == "Water Works":
-                    if len(self.properties[1]) == 1:
-                        if property_mortgaging == self.properties[1][0].name:
-                            self.properties[1][0].mortgage()
-                            print(property_mortgaging + " mortgaged.")
-                        else:
-                            print("Property not owned.")
-                    elif len(self.properties[1]) == 2:
-                        for x in range(2):
-                            if property_mortgaging == self.properties[1][x].name:
-                                self.properties[1][x].mortgage()
-                                print(property_mortgaging + " mortgaged.")
+                property_mortgaging = input("Select property to mortgage.\n").title()
+                selector = self.variable_prop_owned(property_mortgaging)
+                if selector != -1:
+                    if selector == 0:
+                        self.properties[0][selector].mortgage()
                     else:
-                        print("Property not owned.")
-                elif property_mortgaging.find("Railroad") != -1 or property_mortgaging.find("Line") != -1:
-                    found = False
-                    for x in self.properties[2]:
-                        if x.name == property_mortgaging:
-                            x.mortgage()
-                            found = True
-                    if found:
-                        print(property_mortgaging + " mortgaged.")
-                    else:
-                        print("Property not owned.")
-                else:
-                    try:
-                        self.properties[0][property_mortgaging].mortgage()
-                        print(property_mortgaging + " mortgaged.")
-                    except KeyError:
-                        print("Property not owned.")
+                        for x in self.properties[selector]:
+                            if x.name == property_mortgaging:
+                                x.mortgage()
 
             elif choice.lower() == "trade":
                 self.trade()
@@ -403,7 +496,7 @@ class Property(Tile):
             player.properties[0][self.name] = self
 
     def sell(self, player):
-        option = input("Buy or auction property?")
+        option = input("Buy or auction property?\n")
         if option.lower() == "buy":
             if player.money < self.value:
                 print("Not enough money. Please auction.")
@@ -416,11 +509,11 @@ class Property(Tile):
             player_list_copy = list(Player.player_list)
             while len(player_list_copy) != 1:
                 for player_num in range(len(player_list_copy)):
-                    choice = input("Bid or fold. Current bid: " + str(bid))
+                    choice = input("Bid or fold. Current bid: " + str(bid) + "\n")
                     if choice == "fold":
                         del player_list_copy[player_num]
                     elif choice == "bid":
-                        new_bid = input("Enter bid. Current bid: " + str(bid))
+                        new_bid = input("Enter bid. Current bid: " + str(bid) + "\n")
                         if bid < new_bid <= player_list_copy[player_num].money:
                             bid = new_bid
                         else:
@@ -608,6 +701,7 @@ class Dice:
     def throw():
         Dice.roll[0] = random.randint(1, 6)
         Dice.roll[1] = random.randint(1, 6)
+
 
 def go_check(initial_position, player):
     if player.position < initial_position and not player.jail:
