@@ -18,6 +18,7 @@ class Player:
 
     def list_all(self):
         for x in self.properties[0]:
+            # Prints out all properties that are colours, with the number of houses and hotels aligned.
             print(x + ' ' * (32 - len(x)), end="")
             if self.properties[0][x].houses > 0:
                 print(str(self.properties[0][x].houses) + " houses", end="")
@@ -26,31 +27,36 @@ class Player:
             print("")
         print("\n")
         for x in self.properties[1]:
+            # Prints out utilities
             print(x.name)
         print("\n")
         for x in self.properties[2]:
+            # Prints out railroads
             print(x.name)
 
     def move_action(self):
         self.position = (self.position + Dice.roll[0] + Dice.roll[1]) % 40
         tiles[self.position].action(self)
 
+    def trade(self):
+
+
     def roll_dice(self, counter=0):
         if not self.jail:
+            print(self.name + "rolls dice.")
             Dice.throw()
             initial_position = self.position
             print(self.name + " rolled a " + str(Dice.roll[0] + Dice.roll[1]))
             if Dice.roll[0] == Dice.roll[1]:
                 print("Rolled doubles.")
                 if counter == 2:
+                    # If the player has previously already rolled 2 doubles, they are sent to jail.
                     self.jailed()
                     print("Double three times in a row. ", end="")
                 else:
-                    if initial_position > self.position > 0:
-                        Go.action(self)
+                    go_check(initial_position, self)
                     self.roll_dice(counter + 1)
                     self.move_action()
-                    return
             else:
                 self.move_action()
                 if initial_position > self.position > 0 and self.jail == False:
@@ -86,6 +92,7 @@ class Player:
                 return
 
         for x in Player.player_list:
+            # Checks the money of all players
             if x.money < 0:
                 x.debt()
 
@@ -155,15 +162,7 @@ class Player:
                         print("Property not owned.")
 
             elif choice.lower() == "trade":
-                trade_player = None
-                pass
-                for x in Player.player_list:
-                    print(x.name)
-                try:
-                    trade_player = Player.player_list[input("Which player would you like to trade with?")]
-                except KeyError:
-                    print("Selected player doesn't exist.")
-            awer
+                self.trade()
 
     def transaction(self, value, partner, trusted=False):
         if not trusted:
@@ -226,10 +225,12 @@ class CommunityChest(Tile):
 
     @staticmethod
     def action(player):
+        initial_position = player.position
         card = random.randint(0, len(CommunityChest.cards_list))
         print(CommunityChest.cards_list[card])
         if card == 0:
             player.position = 0
+            tiles[player.position].action(player)
         elif card == 1:
             player.transaction(200, "the Bank", True)
         elif card == 2:
@@ -268,6 +269,7 @@ class CommunityChest(Tile):
             player.transaction(10, "the Bank", True)
         elif card == 15:
             player.transaction(100, "the Bank", True)
+        go_check(initial_position, player)
 
 
 class Chance(Tile):
@@ -284,17 +286,27 @@ class Chance(Tile):
 
     @staticmethod
     def action(player):
+        # The actions for tiles are done per card as some properties do not follow the conventional flow.
+        initial_position = player.position
         card = random.randint(0, len(CommunityChest.cards_list))
         print(CommunityChest.cards_list[card])
         if card == 0:
             player.position = 0
+            tiles[player.position].action(player)
         elif card == 1:
             player.position = 24
+            tiles[player.position].action(player)
         elif card == 2:
             player.position = 11
+            tiles[player.position].action(player)
         elif card == 3:
             if 13 < player.position < 29:
                 player.position = 28
+                tiles[player.position].action(player)
+                Dice.throw()
+            else:
+                player.position = 12
+                tiles[player.position].action(player)
                 Dice.throw()
         elif card == 4:
             if 15 > player.position >= 5:
@@ -306,8 +318,12 @@ class Chance(Tile):
             else:
                 player.position = 5
 
-            if tiles[player.position] is not None:
+            if tiles[player.position].player != banker:
+                # If the railroad is not owned by the bank, pay double.
                 tiles[player.position].action(player)
+                tiles[player.position].action(player)
+            else:
+                tiles[player.position].action(player)            
         elif card == 5:
             player.transaction(50, "the Bank", True)
         elif card == 6:
@@ -315,6 +331,7 @@ class Chance(Tile):
             del Chance.cards_list[6]
         elif card == 7:
             player.position -= 3
+            tiles[player.position].action(player)
         elif card == 8:
             player.position = 10
             player.jailed()
@@ -330,8 +347,10 @@ class Chance(Tile):
             player.transaction(-15, "the Bank", True)
         elif card == 11:
             player.position = 5
+            tiles[player.position].action(player)
         elif card == 12:
             player.position = 39
+            tiles[player.position].action(player)
         elif card == 13:
             for payee in Player.player_list:
                 player.transaction(-50, Player.player_list[payee], True)
@@ -339,6 +358,7 @@ class Chance(Tile):
             player.transaction(150, "the Bank", True)
         elif card == 15:
             player.transaction(100, "the Bank", True)
+        go_check(initial_position, player)
 
 
 class Property(Tile):
@@ -589,6 +609,11 @@ class Dice:
         Dice.roll[0] = random.randint(1, 6)
         Dice.roll[1] = random.randint(1, 6)
 
+def go_check(initial_position, player):
+    if player.position < initial_position and not player.jail:
+        Go.action(player)
+        return True
+    
 
 banker = Player("the Bank", 1000000)
 
@@ -622,7 +647,7 @@ tiles = [Go("GO"),
          Colours("Ventnor Avenue", 27, 260, 22),
          Utilities("Water Works", 28, 150),
          Colours("Marvin Avenue", 29, 280, 24),
-         # Go to Jail
+         GotoJail(),
          Colours("Pacific Avenue", 31, 300, 26),
          Colours("North Carolina Avenue", 32, 300, 26),
          CommunityChest(),
