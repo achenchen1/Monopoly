@@ -32,7 +32,7 @@ class Player:
             print(x.name)
 
     def move_action(self):
-        self.position = (self.position + Dice.roll[0] + Dice.roll[1]) ^ 40
+        self.position = (self.position + Dice.roll[0] + Dice.roll[1]) % 40
         tiles[self.position].action(self)
 
     def roll_dice(self, counter=0):
@@ -52,9 +52,9 @@ class Player:
                     self.move_action()
                     return
             else:
-                if initial_position > self.position > 0:
-                    Go.action(self)
                 self.move_action()
+                if initial_position > self.position > 0 and self.jail == False:
+                    Go.action(self)
         else:
             choice = input("Roll for doubles (R), pay fine (F), or use card (C).")
             if choice.lower == "r":
@@ -155,8 +155,15 @@ class Player:
                         print("Property not owned.")
 
             elif choice.lower() == "trade":
-            for x in Player.player_list:
+                trade_player = None
+                pass
+                for x in Player.player_list:
                     print(x.name)
+                try:
+                    trade_player = Player.player_list[input("Which player would you like to trade with?")]
+                except KeyError:
+                    print("Selected player doesn't exist.")
+            awer
 
     def transaction(self, value, partner, trusted=False):
         if not trusted:
@@ -195,6 +202,16 @@ class Go(Tile):
     def action(player):
         print("For passing or landing on Go, ", end="")
         player.transaction(200, "the Bank")
+
+
+class GotoJail(Tile):
+    def __init__(self, name="Go to jail"):
+        Tile.__init__(self, name)
+
+    @staticmethod
+    def action(player):
+        print("Go to jail.")
+        player.jailed()
 
 
 class CommunityChest(Tile):
