@@ -1,0 +1,439 @@
+{
+    "0": {
+        "type": "S",
+        "name": "GO"
+    },
+    "1": {
+        "type": "P",
+        "name": "Mediterranean Avenue",
+        "value": 60,
+        "rent": [
+            2,
+            10,
+            30,
+            90,
+            160,
+            250
+        ],
+        "building_cost": 50,
+        "mortgage_value": 30
+    },
+    "2": {
+        "type": "CC",
+        "name": "Community Chest"
+    },
+    "3": {
+        "type": "P",
+        "name": "Baltic Avenue",
+        "value": 60,
+        "rent": [
+            4,
+            20,
+            60,
+            180,
+            320,
+            450
+        ],
+        "building_cost": 50,
+        "mortgage_value": 30
+    },
+    "4": {
+        "type": "T",
+        "name": "City Tax",
+        "value": 200
+    },
+    "5": {
+        "type": "P",
+        "name": "Oriental Avenue",
+        "value": 100,
+        "rent": [
+            6,
+            30,
+            90,
+            270,
+            400,
+            550
+        ],
+        "building_cost": 50,
+        "mortgage_value": 50
+    },
+    "6": {
+        "type": "R",
+        "name": "Reading Railroad",
+        "value": 200,
+        "rent": [
+            25,
+            50,
+            100,
+            200
+        ]
+    },
+    "7": {
+        "type": "CH",
+        "name": "Chance"
+    },
+    "8": {
+        "type": "P",
+        "name": "Vermont Avenue",
+        "value": 100,
+        "rent": [
+            6,
+            30,
+            90,
+            270,
+            400,
+            550
+        ],
+        "building_cost": 50,
+        "mortgage_value": 50
+    },
+    "9": {
+        "type": "P",
+        "name": "Connecticut Avenue",
+        "value": 120,
+        "rent": [
+            8,
+            40,
+            100,
+            300,
+            450,
+            600
+        ],
+        "building_cost": 50,
+        "mortgage_value": 60
+    },
+    "10": {
+        "type": "J",
+        "name": "Jail",
+        "alt_name": "Just Visiting"
+    },
+    "11": {
+        "type": "P",
+        "name": "St. Charles Place",
+        "value": 140,
+        "rent": [
+            10,
+            50,
+            150,
+            450,
+            625,
+            750
+        ],
+        "building_cost": 100,
+        "mortgage_value": 70
+    },
+    "12": {
+        "type": "U",
+        "name": "Electric Company",
+        "value": 150,
+        "mortgage_value": 75
+    },
+    "13": {
+        "type": "P",
+        "name": "States Avenue",
+        "value": 140,
+        "rent": [
+            10,
+            50,
+            150,
+            450,
+            625,
+            750
+        ],
+        "building_cost": 100,
+        "mortgage_value": 70
+    },
+    "14": {
+        "type": "P",
+        "name": "Virginia Avenue",
+        "value": 160,
+        "rent": [
+            12,
+            60,
+            180,
+            500,
+            700,
+            900
+        ],
+        "building_cost": 100,
+        "mortgage_value": 80
+    },
+    "15": {
+        "type": "R",
+        "name": "Pennsylvania Railroad",
+        "value": 200,
+        "rent": [
+            25,
+            50,
+            100,
+            200
+        ]
+    },
+    "16": {
+        "type": "P",
+        "name": "St. James Place",
+        "value": 180,
+        "rent": [
+            14,
+            70,
+            200,
+            550,
+            750,
+            950
+        ],
+        "building_cost": 100,
+        "mortgage_value": 90
+    },
+    "17": {
+        "type": "CC",
+        "name": "Community Chest"
+    },
+    "18": {
+        "type": "P",
+        "name": "Tennessee Avenue",
+        "value": 180,
+        "rent": [
+            14,
+            70,
+            200,
+            550,
+            750,
+            950
+        ],
+        "building_cost": 100,
+        "mortgage_value": 90
+    },
+    "19": {
+        "type": "P",
+        "name": "New York Avenue",
+        "value": 200,
+        "rent": [
+            16,
+            80,
+            220,
+            600,
+            800,
+            1000
+        ],
+        "building_cost": 100,
+        "mortgage_value": 100
+    },
+    "20": {
+        "type": "F",
+        "name": "Free Parking"
+    },
+    "21": {
+        "type": "P",
+        "name": "Kentucky Avenue",
+        "value": 220,
+        "rent": [
+            18,
+            90,
+            250,
+            700,
+            875,
+            1050
+        ],
+        "building_cost": 150,
+        "mortgage_value": 110
+    },
+    "22": {
+        "type": "CH",
+        "name": "Chance"
+    },
+    "23": {
+        "type": "P",
+        "name": "Indiana Avenue",
+        "value": 220,
+        "rent": [
+            18,
+            90,
+            250,
+            700,
+            875,
+            1050
+        ],
+        "building_cost": 150,
+        "mortgage_value": 110
+    },
+    "24": {
+        "type": "P",
+        "name": "Illinois Avenue",
+        "value": 240,
+        "rent": [
+            20,
+            100,
+            300,
+            750,
+            925,
+            1100
+        ],
+        "building_cost": 150,
+        "mortgage_value": 120
+    },
+    "25": {
+        "type": "R",
+        "name": "B&O Railroad",
+        "value": 200,
+        "rent": [
+            25,
+            50,
+            100,
+            200
+        ]
+    },
+    "26": {
+        "type": "P",
+        "name": "Atlantic Avenue",
+        "value": 260,
+        "rent": [
+            22,
+            110,
+            330,
+            800,
+            975,
+            1150
+        ],
+        "building_cost": 150,
+        "mortgage_value": 130
+    },
+    "27": {
+        "type": "P",
+        "name": "Ventnor Avenue",
+        "value": 260,
+        "rent": [
+            22,
+            110,
+            330,
+            800,
+            975,
+            1150
+        ],
+        "building_cost": 150,
+        "mortgage_value": 130
+    },
+    "28": {
+        "type": "U",
+        "name": "Water Works",
+        "value": 150,
+        "mortgage_value": 75
+    },
+    "29": {
+        "type": "P",
+        "name": "Marvin Gardens",
+        "value": 280,
+        "rent": [
+            24,
+            120,
+            360,
+            850,
+            1025,
+            1200
+        ],
+        "building_cost": 150,
+        "mortgage_value": 140
+    },
+    "30": {
+        "type": "G",
+        "name": "Go to Jail"
+    },
+    "31": {
+        "type": "P",
+        "name": "Pacific Avenue",
+        "value": 300,
+        "rent": [
+            26,
+            130,
+            390,
+            900,
+            1100,
+            1275
+        ],
+        "building_cost": 200,
+        "mortgage_value": 150
+    },
+    "32": {
+        "type": "P",
+        "name": "North Carolina Avenue",
+        "value": 300,
+        "rent": [
+            26,
+            130,
+            390,
+            900,
+            1100,
+            1275
+        ],
+        "building_cost": 200,
+        "mortgage_value": 150
+    },
+    "33": {
+        "type": "CC",
+        "name": "Community Chest"
+    },
+    "34": {
+        "type": "P",
+        "name": "Pennsylvania Avenue",
+        "value": 320,
+        "rent": [
+            28,
+            150,
+            450,
+            1000,
+            1200,
+            1400
+        ],
+        "building_cost": 200,
+        "mortgage_value": 160
+    },
+    "35": {
+        "type": "R",
+        "name": "Short Line",
+        "value": 200,
+        "rent": [
+            25,
+            50,
+            100,
+            200
+        ]
+    },
+    "36": {
+        "type": "CH",
+        "name": "Chance"
+    },
+    "37": {
+        "type": "P",
+        "name": "Park Place",
+        "value": 350,
+        "rent": [
+            35,
+            175,
+            500,
+            1100,
+            1300,
+            1500
+        ],
+        "building_cost": 200,
+        "mortgage_value": 175
+    },
+    "38": {
+        "type": "T",
+        "name": "LUXURY TAX",
+        "value": 100
+    },
+    "39": {
+        "type": "P",
+        "name": "Boardwalk",
+        "value": 400,
+        "rent": [
+            50,
+            200,
+            600,
+            1400,
+            1700,
+            2000
+        ],
+        "building_cost": 200,
+        "mortgage_value": 200
+    }
+}
