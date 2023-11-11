@@ -6,6 +6,7 @@
     "1": {
         "type": "P",
         "name": "Mediterranean Avenue",
+        "group": "Brown",
         "value": 60,
         "rent": [
             2,
@@ -25,6 +26,7 @@
     "3": {
         "type": "P",
         "name": "Baltic Avenue",
+        "group": "Brown",
         "value": 60,
         "rent": [
             4,
@@ -45,6 +47,7 @@
     "5": {
         "type": "P",
         "name": "Oriental Avenue",
+        "group": "Light Blue",
         "value": 100,
         "rent": [
             6,
@@ -75,6 +78,7 @@
     "8": {
         "type": "P",
         "name": "Vermont Avenue",
+        "group": "Light Blue",
         "value": 100,
         "rent": [
             6,
@@ -90,6 +94,7 @@
     "9": {
         "type": "P",
         "name": "Connecticut Avenue",
+        "group": "Light Blue",
         "value": 120,
         "rent": [
             8,
@@ -110,6 +115,7 @@
     "11": {
         "type": "P",
         "name": "St. Charles Place",
+        "group": "Pink",
         "value": 140,
         "rent": [
             10,
@@ -131,6 +137,7 @@
     "13": {
         "type": "P",
         "name": "States Avenue",
+        "group": "Pink",
         "value": 140,
         "rent": [
             10,
@@ -146,6 +153,7 @@
     "14": {
         "type": "P",
         "name": "Virginia Avenue",
+        "group": "Pink",
         "value": 160,
         "rent": [
             12,
@@ -172,6 +180,7 @@
     "16": {
         "type": "P",
         "name": "St. James Place",
+        "group": "Orange",
         "value": 180,
         "rent": [
             14,
@@ -191,6 +200,7 @@
     "18": {
         "type": "P",
         "name": "Tennessee Avenue",
+        "group": "Orange",
         "value": 180,
         "rent": [
             14,
@@ -206,6 +216,7 @@
     "19": {
         "type": "P",
         "name": "New York Avenue",
+        "group": "Orange",
         "value": 200,
         "rent": [
             16,
@@ -225,6 +236,7 @@
     "21": {
         "type": "P",
         "name": "Kentucky Avenue",
+        "group": "Red",
         "value": 220,
         "rent": [
             18,
@@ -244,6 +256,7 @@
     "23": {
         "type": "P",
         "name": "Indiana Avenue",
+        "group": "Red",
         "value": 220,
         "rent": [
             18,
@@ -259,6 +272,7 @@
     "24": {
         "type": "P",
         "name": "Illinois Avenue",
+        "group": "Red",
         "value": 240,
         "rent": [
             20,
@@ -285,6 +299,7 @@
     "26": {
         "type": "P",
         "name": "Atlantic Avenue",
+        "group": "Yellow",
         "value": 260,
         "rent": [
             22,
@@ -300,6 +315,7 @@
     "27": {
         "type": "P",
         "name": "Ventnor Avenue",
+        "group": "Yellow",
         "value": 260,
         "rent": [
             22,
@@ -321,6 +337,7 @@
     "29": {
         "type": "P",
         "name": "Marvin Gardens",
+        "group": "Yellow",
         "value": 280,
         "rent": [
             24,
@@ -340,6 +357,7 @@
     "31": {
         "type": "P",
         "name": "Pacific Avenue",
+        "group": "Green",
         "value": 300,
         "rent": [
             26,
@@ -355,6 +373,7 @@
     "32": {
         "type": "P",
         "name": "North Carolina Avenue",
+        "group": "Green",
         "value": 300,
         "rent": [
             26,
@@ -374,6 +393,7 @@
     "34": {
         "type": "P",
         "name": "Pennsylvania Avenue",
+        "group": "Green",
         "value": 320,
         "rent": [
             28,
@@ -404,6 +424,7 @@
     "37": {
         "type": "P",
         "name": "Park Place",
+        "group": "Blue",
         "value": 350,
         "rent": [
             35,
@@ -424,6 +445,7 @@
     "39": {
         "type": "P",
         "name": "Boardwalk",
+        "group": "Blue",
         "value": 400,
         "rent": [
             50,
