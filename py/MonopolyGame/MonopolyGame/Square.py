@@ -58,9 +58,34 @@ class Buyable(Square):
             return False
         else:
             rent_value = self._rent_value(multiplier)
+        # TODO
+
+    def mortgage(self) -> Result.Result:
+        if not self._mortgaged:
+            self._mortgaged = True
+            return Result.Ok
+        else:
+            return self.MortgageStatusError
+
+    def unmortgage(self, balance: int) -> Result.Result:
+        if not self._mortgaged:
+            return self.MortgageStatusError
+        elif balance >= 1.1 * self.mortgage_value:
+            self._mortgaged = False
+            return Result.Ok
+        else:
+            return self.InsufficientBalanceError
 
     def _rent_value(self, multiplier: int) -> int:
         raise NotImplementedError("Buyable properties must define their rent value")
+
+    class MortgageStatusError(Result.Error):
+        default_message = (
+            "Could not mortgage/unmortgage if already mortgated/unmortgaged."
+        )
+
+    class InsufficientBalanceError(Result.Error):
+        default_message = "Player doesn't have enough balance."
 
 
 class Property(Buyable):
@@ -99,10 +124,12 @@ class Property(Buyable):
                 return self.rent[self.buildings]
 
     def buy_building(self) -> Result.Error:
-        if self.buildings == 5:
-            return Result.BuildingOutOfBoundsError
+        if self._mortgaged:
+            return self.BuildingOnMortgagedError
+        elif self.buildings == 5:
+            return self.BuildingOutOfBoundsError
         elif any(other.buildings < self.buildings for other in self.group_list):
-            return Result.UnequalNumberOfBuildingsError
+            return self.UnequalNumberOfBuildingsError
         elif self.buildings == 4 and Global.hotels == 0:
             return Global.NoMoreHotels
         elif Global.houses == 0:
@@ -118,9 +145,9 @@ class Property(Buyable):
 
     def sell_building(self) -> Result.Error:
         if self.buildings == 0:
-            return Result.BuildingOutOfBoundsError
+            return self.BuildingOutOfBoundsError
         elif any(other.buildings > self.buildings for other in self.group_list):
-            return Result.UnequalNumberOfBuildingsError
+            return self.UnequalNumberOfBuildingsError
 
         if self.buildings == 5:
             if Global.houses < 4:
@@ -133,6 +160,15 @@ class Property(Buyable):
 
         self.buildings -= 1
         return Result.NoError
+
+    def unmortgage(self, balance: int) -> Result:
+        if any(other.buildings > 0 for other in self.group_list):
+            # TODO
+            return self.BuildingOnMortgagedError
+        return super().unmortgage(balance)
+
+    class BuildingOnMortgagedError(Result.Error):
+        default_message = "Cannot build buildings on a mortgaged property"
 
     class BuildingOutOfBoundsError(Result.Error):
         default_message = "Cannot buy or sell another property - would lead to too many or too few buildings."

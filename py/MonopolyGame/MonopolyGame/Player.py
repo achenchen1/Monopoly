@@ -29,15 +29,26 @@ class Player:
         if property not in self.properties:
             return Player.OwnershipError
 
-        if property.sell_building():
+        if result := property.sell_building():
             return Result.Ok
-        pass
+        elif result == Global.NoMoreHouses:
+            raise NotImplementedError("Need to add a 'force sell' function")
+        else:
+            return result
 
     def mortgage_buyable(self, property: Square.Buyable):
-        pass
+        if property not in self.properties:
+            return Player.OwnershipError
+
+        if property.mortgage():
+            self.balance += property.mortgage_value
 
     def unmortgage_buyable(self, property: Square.Buyable):
-        pass
+        if property not in self.properties:
+            return Player.OwnershipError
+
+        if property.unmortgage(self.balance):
+            self.balance -= 1.1 * property.mortgage_value
 
     def trade(
         self,
@@ -45,6 +56,7 @@ class Player:
         self_assets: Sequence[int, Square.Buyable],
         them_assets: Sequence[int, Square.Buyable],
     ):
+        # TODO
         pass
 
     def _buy(self, property: Square.Buyable):
