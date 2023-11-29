@@ -1,17 +1,20 @@
 from __future__ import annotations
 from collections import defaultdict
-from typing import DefaultDict, Dict, List, Set
+from typing import DefaultDict, List, Set
 
 import Global
-import py.MonopolyGame.MonopolyGame.Result as Result
+import Result
 import Player
 
 
 class Square:
-    __all_squares__: Dict[int, Square] = {}
+    def __repr__(self) -> str:
+        return f"{self.id}: {self.name} ({self.__class__})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     def __init__(self, id: int, name: str):
-        Square.__all_squares__[id] = self
         self.id: int = id
         self.name: str = name
 
@@ -23,9 +26,6 @@ class Square:
 
     def execute_action(self, player: Player):
         raise NotImplementedError
-
-    def _get_square_from_id(self, id):
-        return self.__class__.__all_squares__[id]
 
 
 class Buyable(Square):
@@ -41,36 +41,33 @@ class Buyable(Square):
 
         self._mortgaged = False
 
-    def execute_action(self, player: Player, multiplier: int = 1):
+    def execute_action(self, player: Player, multiplier: int = 1) -> None:
         if self.owner is None:
-            self._offer(player)
-        elif self.owner != player:
-            self._charge_rent(player, multiplier)
+            self.offer(player)
+        elif self.owner != player and not self._mortgaged:
+            self.charge_rent(player, multiplier)
 
-    def _offer(self, player: Player):
-        if player._buy(self):
+    def offer(self, player: Player) -> None:
+        if player.buy_square(self):
             self.owner = player
         else:
-            self.owner = Player.auction(self)
+            self.owner = Global.auction(self, player)
 
-    def _charge_rent(self, player: Player, multiplier: int) -> int:
-        if self._mortgaged:
-            return False
-        else:
-            rent_value = self._rent_value(multiplier)
-        # TODO
+    def charge_rent(self, player: Player, multiplier: int) -> int:
+        rent_value = self._rent_value(multiplier)
+        player.pay_rent(rent_value)
 
     def mortgage(self) -> Result.Result:
-        if not self._mortgaged:
+        if self._mortgaged:
+            return self.MortgageStatusError
+        else:
             self._mortgaged = True
             return Result.Ok
-        else:
-            return self.MortgageStatusError
 
-    def unmortgage(self, balance: int) -> Result.Result:
+    def unmortgage(self) -> Result.Result:
         if not self._mortgaged:
             return self.MortgageStatusError
-        elif balance >= 1.1 * self.mortgage_value:
+        elif self.owner.balance >= 1.1 * self.mortgage_value:
             self._mortgaged = False
             return Result.Ok
         else:
@@ -204,5 +201,31 @@ class Utility(Buyable):
             raise ValueError(f"Cannot own {utilities_owned} utilities and charge rent!")
 
 
-def importer(json: Dict):
-    pass
+class Card(Square):
+    def __init__(self, id: int, name: str, deck: List):
+        # TODO - make this a circular linkedlist
+        super().__init__(id, name)
+
+        self.deck: List = deck 
+    
+    def execute_action(self, player: Player):
+        card = self.deck.pop()
+        card.execute()
+
+
+class Start(Square):
+    def __init__(self, id: int, name: str):
+        super().__init__(id, name)
+    
+    def execute_action(self, player: Player):
+        player.balance += 200
+
+
+class Tax(Square):
+    def __init__(self, id: int, name: str, value: int):
+        super().__init__(id, name)
+        self.value = value
+    
+    def execute_action(self, player: Player):
+        # TODO - should probably just work on the player "-" operator
+        player.balance -= self.value
