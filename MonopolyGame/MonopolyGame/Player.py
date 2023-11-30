@@ -7,7 +7,7 @@ import Square
 
 
 class Player:
-    def __init__(self, id: int, color: Tuple[int]=tuple()):
+    def __init__(self, id: int, color: Tuple[int] = tuple()):
         self._id: int = id
         self.square: int = 1
         self.balance: int = 1500
@@ -72,7 +72,7 @@ class Player:
 
         if property.unmortgage(self.balance):
             self.balance -= 1.1 * property.mortgage_value
-    
+
     def pay_rent(self, rent_value: int):
         if self.balance < rent_value:
             raise NotImplementedError

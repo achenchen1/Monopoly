@@ -66,3 +66,7 @@ class Ring:
         self.head.left.right = new_node
         self.head.left = new_node
         self.size += 1
+
+    def remove(self):
+        # TODO
+        pass
