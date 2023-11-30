@@ -5,11 +5,12 @@ from typing import DefaultDict, List, Set
 import Global
 import Result
 import Player
+import Card
 
 
 class Square:
     def __repr__(self) -> str:
-        return f"{self.id}: {self.name} ({self.__class__})"
+        return f"{self.id}: {self.name} ({self.__class__.__name__})"
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -201,22 +202,23 @@ class Utility(Buyable):
             raise ValueError(f"Cannot own {utilities_owned} utilities and charge rent!")
 
 
-class Card(Square):
-    def __init__(self, id: int, name: str, deck: List):
+class CardSquare(Square):
+    def __init__(self, id: int, name: str, deck: List, game: Global.Game):
         # TODO - make this a circular linkedlist
         super().__init__(id, name)
 
-        self.deck: List = deck 
-    
+        self.deck: List[Card.Card] = deck
+        self.game = game
+
     def execute_action(self, player: Player):
         card = self.deck.pop()
-        card.execute()
+        card.execute(self.game, player)
 
 
 class Start(Square):
     def __init__(self, id: int, name: str):
         super().__init__(id, name)
-    
+
     def execute_action(self, player: Player):
         player.balance += 200
 
@@ -225,7 +227,7 @@ class Tax(Square):
     def __init__(self, id: int, name: str, value: int):
         super().__init__(id, name)
         self.value = value
-    
+
     def execute_action(self, player: Player):
         # TODO - should probably just work on the player "-" operator
         player.balance -= self.value

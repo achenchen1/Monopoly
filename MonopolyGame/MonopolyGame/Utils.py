@@ -1,12 +1,13 @@
 from typing import Set, List, Optional
 
+
 class PlayerCycler:
     class Node:
         def __init__(self, value, left, right) -> None:
-            self.right: PlayerCycler.Node = right # next
-            self.left: PlayerCycler.Node = left # prev
+            self.right: PlayerCycler.Node = right  # next
+            self.left: PlayerCycler.Node = left  # prev
             self.value: int = value
-        
+
         def __hash__(self) -> int:
             return self.value
 
