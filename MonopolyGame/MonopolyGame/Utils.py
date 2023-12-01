@@ -13,18 +13,19 @@ class Ring:
             return self.value.__hash__()
 
         def __repr__(self) -> str:
-            return repr(self.value)
+            return f"Node({repr(self.value)})"
 
         def __str__(self) -> str:
-            return str(self.value)
+            return f"Node({str(self.value)})"
 
     def __len__(self):
-        return self.size()
+        return self.size
 
     def __init__(self, base: List[Any]) -> None:
         self.size: int = 0
         self.hashed: Dict[Any, Ring.Node] = {}
         self.head = None
+        self.iterator = None
 
         prev_node: Optional[Ring.Node] = None
 
@@ -42,12 +43,17 @@ class Ring:
         prev_node.right = self.head
 
     def __iter__(self):
+        if self.iterator != None:
+            # https://stackoverflow.com/questions/46941719/how-can-i-have-multiple-iterators-over-a-single-python-iterable-at-the-same-time
+            raise NotImplementedError("Need to add a separate iterator class")
+        self.iterator = self.head
         return self
 
     def __next__(self) -> Ring.Node:
         if self.size > 0:
-            self.head = self.head.right
-            return self.head.left
+            to_return = self.iterator
+            self.iterator = self.iterator.right
+            return to_return
         raise StopIteration
 
     def __repr__(self) -> str:
@@ -61,12 +67,26 @@ class Ring:
     def __str__(self) -> str:
         return repr(self)
 
-    def append(self, value: Any):
+    def append(self, value: Any) -> None:
         new_node = Ring.Node(value, self.head.left, self.head)
+        self.hashed[value] = new_node
         self.head.left.right = new_node
         self.head.left = new_node
         self.size += 1
 
-    def remove(self):
-        # TODO
-        pass
+    def pop(self, value: Any) -> bool:
+        # if we remove the head, set head to the next node
+        # it's fine if we remove the self.iterator node; it's not like we're free()ing the memory for it.
+        if value not in self.hashed:
+            print(value)
+            print(self.hashed)
+            raise ValueError(f"{value} is not in Ring - values in Ring: {self.hashed}")
+        if self.head.value == value:
+            self.head = self.head.right
+
+        to_remove = self.hashed[value]
+        to_remove.left.right = to_remove.right
+        to_remove.right.left = to_remove.left
+        self.size -= 1
+
+        return self.hashed.pop(value)
