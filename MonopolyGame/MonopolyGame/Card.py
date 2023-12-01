@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import Player
-import Global
+from . import Player
+from . import Global
 
 
 class Card:

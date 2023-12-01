@@ -1,9 +1,9 @@
 from __future__ import annotations
-from typing import Set, Tuple
+from typing import Set, Tuple, List
 
-import Global
-import Result
-import Square
+from . import Global
+from . import Result
+from . import Square
 
 
 class Player:
@@ -11,7 +11,8 @@ class Player:
         self._id: int = id
         self.square: int = 1
         self.balance: int = 1500
-        self.properties: Set[Square.Buyable] = {}
+        # self.properties: Set[Square.Buyable] = {}
+        self.properties: List[Square.Buyable] = []
         self._jailed: int = 0
         self._hex_color: Tuple[int] = color
 

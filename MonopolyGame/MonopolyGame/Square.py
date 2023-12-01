@@ -2,10 +2,10 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import DefaultDict, List, Set
 
-import Global
-import Result
-import Player
-import Card
+from . import Global
+from . import Result
+from . import Player
+from . import Card
 
 
 class Square:
@@ -15,9 +15,10 @@ class Square:
     def __str__(self) -> str:
         return self.__repr__()
 
-    def __init__(self, id: int, name: str):
+    def __init__(self, id: int, name: str, game: Global.Game):
         self.id: int = id
         self.name: str = name
+        self.game: Global.Game = game
 
     def __eq__(self, other):
         return self == other
@@ -31,9 +32,15 @@ class Square:
 
 class Buyable(Square):
     def __init__(
-        self, id: int, name: str, value: int, rent: List[int], mortgage_value: int
+        self,
+        id: int,
+        name: str,
+        value: int,
+        rent: List[int],
+        mortgage_value: int,
+        game: Global.Game,
     ):
-        super().__init__(id, name)
+        super().__init__(id, name, game)
         self.rent: List[int] = rent  # How much each tier costs - houses, e.g.
         self.value: int = value  # How much this property costs
         self.mortgage_value: int = mortgage_value
@@ -44,7 +51,10 @@ class Buyable(Square):
 
     def execute_action(self, player: Player, multiplier: int = 1) -> None:
         if self.owner is None:
-            self.offer(player)
+            new_owner = self.offer(player)
+            if new_owner is not None:
+                # TODO
+                new_owner.properties.append(self)
         elif self.owner != player and not self._mortgaged:
             self.charge_rent(player, multiplier)
 
@@ -52,7 +62,8 @@ class Buyable(Square):
         if player.buy_square(self):
             self.owner = player
         else:
-            self.owner = Global.auction(self, player)
+            self.owner = self.game.auction(self, player)
+        return self.owner
 
     def charge_rent(self, player: Player, multiplier: int) -> int:
         rent_value = self._rent_value(multiplier)
@@ -99,8 +110,9 @@ class Property(Buyable):
         rent: List[int],
         building_cost: int,
         mortgage_value: int,
+        game: Global.Game,
     ):
-        super().__init__(id, name, value, rent, mortgage_value)
+        super().__init__(id, name, value, rent, mortgage_value, game)
         self.building_cost: int = building_cost
         self.buildings: int = 0
         self.__class__.groups[group].append(self)
@@ -179,12 +191,19 @@ class Railroad(Buyable):
     owners: DefaultDict[Player.Player, Set[Railroad]] = defaultdict(set)
 
     def __init__(
-        self, id: int, name: str, value: int, rent: List[int], mortgage_value: int
+        self,
+        id: int,
+        name: str,
+        value: int,
+        rent: List[int],
+        mortgage_value: int,
+        game: Global.Game,
     ):
-        super().__init__(id, name, value, rent, mortgage_value)
+        super().__init__(id, name, value, rent, mortgage_value, game)
 
     def _rent_value(self, multiplier: int) -> int:
-        railroads_owned = self.__class__.owners[self.owner]
+        # TODO - need to modify how owners are added
+        railroads_owned = len(self.__class__.owners[self.owner])
         return multiplier * self.rent[railroads_owned - 1]
 
 
@@ -205,10 +224,9 @@ class Utility(Buyable):
 class CardSquare(Square):
     def __init__(self, id: int, name: str, deck: List, game: Global.Game):
         # TODO - make this a circular linkedlist
-        super().__init__(id, name)
+        super().__init__(id, name, game)
 
         self.deck: List[Card.Card] = deck
-        self.game = game
 
     def execute_action(self, player: Player):
         card = self.deck.pop()
@@ -216,18 +234,21 @@ class CardSquare(Square):
 
 
 class Start(Square):
-    def __init__(self, id: int, name: str):
-        super().__init__(id, name)
-
     def execute_action(self, player: Player):
         player.balance += 200
 
 
 class Tax(Square):
-    def __init__(self, id: int, name: str, value: int):
-        super().__init__(id, name)
+    def __init__(self, id: int, name: str, value: int, game: Global.Game):
+        super().__init__(id, name, game)
         self.value = value
 
     def execute_action(self, player: Player):
         # TODO - should probably just work on the player "-" operator
         player.balance -= self.value
+
+
+class FreeParking(Square):
+    def execute_action(self, player: Player):
+        # Do nothing
+        return
