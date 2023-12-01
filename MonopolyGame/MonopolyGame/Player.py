@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Set, Tuple, List
 
-from . import Global
+from . import Game
 from . import Result
 from . import Square
 
@@ -21,14 +21,14 @@ class Player:
         choice = ""
         if self.balance >= property.value:
             while choice not in ["Y", "N"]:
-                choice = input("Want to buy? Y/N\n")
+                choice = input("Want to buy? Y/N\n> ")
 
             return choice == "Y"
         else:
             while self.balance < property.value:
                 while choice.lower() not in ["Y", "N"]:
                     choice = input(
-                        "Insufficient funds to buy; want to manage assets? Y/N\n"
+                        "Insufficient funds to buy; want to manage assets? Y/N\n> "
                     )
                     if choice == "Y":
                         raise NotImplementedError
@@ -54,7 +54,7 @@ class Player:
 
         if result := property.sell_building():
             return Result.Ok
-        elif result == Global.NoMoreHouses:
+        elif result == Game.NoMoreHouses:
             raise NotImplementedError("Need to add a 'force sell' function")
         else:
             return result

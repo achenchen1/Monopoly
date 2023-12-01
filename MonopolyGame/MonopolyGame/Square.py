@@ -2,7 +2,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import DefaultDict, List, Set
 
-from . import Global
+from . import Game
 from . import Result
 from . import Player
 from . import Card
@@ -15,10 +15,10 @@ class Square:
     def __str__(self) -> str:
         return self.__repr__()
 
-    def __init__(self, id: int, name: str, game: Global.Game):
+    def __init__(self, id: int, name: str, game: Game.Game):
         self.id: int = id
         self.name: str = name
-        self.game: Global.Game = game
+        self.game: Game.Game = game
 
     def __eq__(self, other):
         return self == other
@@ -38,7 +38,7 @@ class Buyable(Square):
         value: int,
         rent: List[int],
         mortgage_value: int,
-        game: Global.Game,
+        game: Game.Game,
     ):
         super().__init__(id, name, game)
         self.rent: List[int] = rent  # How much each tier costs - houses, e.g.
@@ -110,7 +110,7 @@ class Property(Buyable):
         rent: List[int],
         building_cost: int,
         mortgage_value: int,
-        game: Global.Game,
+        game: Game.Game,
     ):
         super().__init__(id, name, value, rent, mortgage_value, game)
         self.building_cost: int = building_cost
@@ -140,17 +140,17 @@ class Property(Buyable):
             return self.BuildingOutOfBoundsError
         elif any(other.buildings < self.buildings for other in self.group_list):
             return self.UnequalNumberOfBuildingsError
-        elif self.buildings == 4 and Global.hotels == 0:
-            return Global.NoMoreHotels
-        elif Global.houses == 0:
-            return Global.NoMoreHouses
+        elif self.buildings == 4 and Game.hotels == 0:
+            return Game.NoMoreHotels
+        elif Game.houses == 0:
+            return Game.NoMoreHouses
 
         self.buildings += 1
         if self.buildings == 4:
-            Global.houses += 4
-            Global.hotels -= 1
+            Game.houses += 4
+            Game.hotels -= 1
         else:
-            Global.houses += 1
+            Game.houses += 1
         return Result.NoError
 
     def sell_building(self) -> Result.Error:
@@ -160,13 +160,13 @@ class Property(Buyable):
             return self.UnequalNumberOfBuildingsError
 
         if self.buildings == 5:
-            if Global.houses < 4:
-                return Global.NoMoreHouses
+            if Game.houses < 4:
+                return Game.NoMoreHouses
             else:
-                Global.houses -= 4
-                Global.hotels += 1
+                Game.houses -= 4
+                Game.hotels += 1
         else:
-            Global.houses += 1
+            Game.houses += 1
 
         self.buildings -= 1
         return Result.NoError
@@ -197,7 +197,7 @@ class Railroad(Buyable):
         value: int,
         rent: List[int],
         mortgage_value: int,
-        game: Global.Game,
+        game: Game.Game,
     ):
         super().__init__(id, name, value, rent, mortgage_value, game)
 
@@ -222,7 +222,7 @@ class Utility(Buyable):
 
 
 class CardSquare(Square):
-    def __init__(self, id: int, name: str, deck: List, game: Global.Game):
+    def __init__(self, id: int, name: str, deck: List, game: Game.Game):
         # TODO - make this a circular linkedlist
         super().__init__(id, name, game)
 
@@ -239,7 +239,7 @@ class Start(Square):
 
 
 class Tax(Square):
-    def __init__(self, id: int, name: str, value: int, game: Global.Game):
+    def __init__(self, id: int, name: str, value: int, game: Game.Game):
         super().__init__(id, name, game)
         self.value = value
 

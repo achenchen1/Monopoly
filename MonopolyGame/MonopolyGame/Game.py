@@ -1,6 +1,5 @@
 from __future__ import annotations
 import random
-import json
 from .Result import Result
 from typing import Optional, Sequence, List, Tuple
 
@@ -19,54 +18,6 @@ class NoMoreHouses(GlobalError):
 
 class NoMoreHotels(GlobalError):
     default_message = "No more hotels left in the game."
-
-
-def importer(input_file, squares, chance, community_chest, game):
-    # TODO: type hinting
-    with open(input_file, "r") as f:
-        j = json.load(f)
-        for k, v in j.items():
-            k = int(k)
-            match v["type"]:
-                case "S":
-                    squares.append(Square.Start(k, v["name"], game))
-                case "P":
-                    squares.append(
-                        Square.Property(
-                            k,
-                            v["name"],
-                            v["group"],
-                            v["value"],
-                            v["rent"],
-                            v["building_cost"],
-                            v["mortgage_value"],
-                            game,
-                        )
-                    )
-                case "R":
-                    squares.append(
-                        Square.Railroad(
-                            k,
-                            v["name"],
-                            v["value"],
-                            v["rent"],
-                            v["mortgage_value"],
-                            game,
-                        )
-                    )
-                case "T":
-                    squares.append(Square.Tax(k, v["name"], v["value"], game))
-                case "CC":
-                    squares.append(
-                        Square.CardSquare(k, v["name"], community_chest, game)
-                    )
-                case "CH":
-                    squares.append(Square.CardSquare(k, v["name"], chance, game))
-                case "F":
-                    squares.append(Square.FreeParking(k, v["name"], game))
-                case "G":
-                    # TODO will raise a notimplementederror
-                    squares.append(Square.Square(k, v["name"], game))
 
 
 class Game:
@@ -112,7 +63,7 @@ class Game:
             )
         for p in players_in_auction:
             player_choice = input(
-                f"\033[38;2;{p._hex_color[0]};{p._hex_color[1]};{p._hex_color[2]}mPlayer {p._id}\033[0m: current bid is {bid_price}. Enter new bid or select 'N'.\n"
+                f"\033[38;2;{p._hex_color[0]};{p._hex_color[1]};{p._hex_color[2]}mPlayer {p._id}\033[0m: current bid is {bid_price}. Enter new bid or select 'N'.\n> "
             )
 
             if player_choice == "N":
@@ -150,7 +101,7 @@ class Game:
         action = None
         while action not in choices:
             action = input(
-                f"\033[38;2;{player._hex_color[0]};{player._hex_color[1]};{player._hex_color[2]}mChoose an action: {', '.join(choices)}\033[0m\n"
+                f"\033[38;2;{player._hex_color[0]};{player._hex_color[1]};{player._hex_color[2]}mChoose an action: {', '.join(choices)}\033[0m\n> "
             )
 
         # TODO

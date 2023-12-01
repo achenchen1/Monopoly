@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from . import Player
-from . import Global
+from . import Game
 
 
 class Card:
@@ -10,14 +10,14 @@ class Card:
         self.name = name
         self.description = description
 
-    def execute(self, game: Global.Game, player: Player.Player) -> None:
+    def execute(self, game: Game.Game, player: Player.Player) -> None:
         print(
             f"\033[38;2;{player._hex_color[0]};{player._hex_color[1]};{player._hex_color[2]}mLanded on \033[0m'{self.name}'!\n"
         )
 
 
 class GoToGo(Card):
-    def execute(self, game: Global.Game, player: Player.Player) -> None:
+    def execute(self, game: Game.Game, player: Player.Player) -> None:
         # TODO: is GO always 0?
         game.player_positions[player] = 0
         game.squares[0].execute_action(player)
