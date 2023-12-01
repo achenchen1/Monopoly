@@ -53,7 +53,7 @@ class Ring:
         if self.size > 0:
             to_return = self.iterator
             self.iterator = self.iterator.right
-            return to_return
+            return to_return.value
         raise StopIteration
 
     def __repr__(self) -> str:
@@ -74,13 +74,13 @@ class Ring:
         self.head.left = new_node
         self.size += 1
 
-    def pop(self, value: Any) -> bool:
+    def pop(self, value: Any) -> Any:
         # if we remove the head, set head to the next node
         # it's fine if we remove the self.iterator node; it's not like we're free()ing the memory for it.
         if value not in self.hashed:
-            print(value)
-            print(self.hashed)
-            raise ValueError(f"{value} is not in Ring - values in Ring: {self.hashed}")
+            raise ValueError(
+                f"Can't pop {value}, value is not in Ring - values in Ring: {self.hashed}"
+            )
         if self.head.value == value:
             self.head = self.head.right
 
@@ -90,3 +90,12 @@ class Ring:
         self.size -= 1
 
         return self.hashed.pop(value)
+
+    def set_head(self, value: Any) -> Any:
+        if value not in self.hashed:
+            raise ValueError(
+                f"Can't set head to {value}, value is not in Ring - values in Ring: {self.hashed}"
+            )
+        else:
+            self.head = self.hashed[value]
+            return self.head
