@@ -1,12 +1,12 @@
 from __future__ import annotations
 import random
 import json
-from Result import Result
+from .Result import Result
 from typing import Optional, Sequence, List, Tuple
 
-import Card
-import Square
-import Player
+from . import Square
+from . import Player
+from . import Utils
 
 
 class GlobalError(Result):
@@ -26,9 +26,10 @@ def importer(input_file, squares, chance, community_chest, game):
     with open(input_file, "r") as f:
         j = json.load(f)
         for k, v in j.items():
+            k = int(k)
             match v["type"]:
                 case "S":
-                    squares.append(Square.Start(k, v["name"]))
+                    squares.append(Square.Start(k, v["name"], game))
                 case "P":
                     squares.append(
                         Square.Property(
@@ -39,16 +40,22 @@ def importer(input_file, squares, chance, community_chest, game):
                             v["rent"],
                             v["building_cost"],
                             v["mortgage_value"],
+                            game,
                         )
                     )
                 case "R":
                     squares.append(
                         Square.Railroad(
-                            k, v["name"], v["value"], v["rent"], v["mortgage_value"]
+                            k,
+                            v["name"],
+                            v["value"],
+                            v["rent"],
+                            v["mortgage_value"],
+                            game,
                         )
                     )
                 case "T":
-                    squares.append(Square.Tax(k, v["name"], v["value"]))
+                    squares.append(Square.Tax(k, v["name"], v["value"], game))
                 case "CC":
                     squares.append(
                         Square.CardSquare(k, v["name"], community_chest, game)
@@ -56,11 +63,10 @@ def importer(input_file, squares, chance, community_chest, game):
                 case "CH":
                     squares.append(Square.CardSquare(k, v["name"], chance, game))
                 case "F":
-                    # TODO will raise a notimplementederror
-                    squares.append(Square.Square(k, v["name"]))
+                    squares.append(Square.FreeParking(k, v["name"], game))
                 case "G":
                     # TODO will raise a notimplementederror
-                    squares.append(Square.Square(k, v["name"]))
+                    squares.append(Square.Square(k, v["name"], game))
 
 
 class Game:
@@ -94,23 +100,31 @@ class Game:
     def auction(
         self, property: Square.Buyable, starting_player: Player = None
     ) -> Optional[Player.Player]:
-        # TODO
-        # players_left = len(self.players)
-        # players_list = self._game.players.copy()
-        # current_value = 1
+        players_in_auction = Utils.Ring(self.players)
+        players_in_auction.set_head(starting_player)
+        bid_price = 1
+        winner = None
 
-        # if starting_player is not None:
-        #     current_player = players_list.index(starting_player)
-        # else:
-        #     current_player = 0
+        if type(property) == Square.Property:
+            colors = self.colors[property.group]
+            print(
+                f"Bidding on \033[48;2;{colors[0]};{colors[1]};{colors[2]}m{property.name}\033[0m\n"
+            )
+        for p in players_in_auction:
+            player_choice = input(
+                f"\033[38;2;{p._hex_color[0]};{p._hex_color[1]};{p._hex_color[2]}mPlayer {p._id}\033[0m: current bid is {bid_price}. Enter new bid or select 'N'.\n"
+            )
 
-        # while players_left > 0:
-        #     response: str = input(f"Current to bid on {property.name} is {current_value}")
-        #     if response == 'N':
-        #         players_left -= 1
-        #         players_list
+            if player_choice == "N":
+                players_in_auction.pop(p)
+            elif (new_bid := int(player_choice)) <= p.balance:
+                if new_bid > bid_price:
+                    bid_price = new_bid
+                    winner = p
+            else:
+                raise NotImplementedError
 
-        return starting_player
+        return winner
 
     def trade(
         self,
@@ -142,8 +156,19 @@ class Game:
         # TODO
         match action:
             case "Manage":
-                for p in player.properties:
-                    print(p)
+                # TODO: need to not cycle to next player
+                print("Properties:")
+                # TODO: make these colors print from the objects themselves
+                properties = []
+                for p in sorted(player.properties, key=lambda x: x.id):
+                    if type(p) == Square.Property:
+                        colors = self.colors[p.group]
+                        properties.append(
+                            f"\033[48;2;{colors[0]};{colors[1]};{colors[2]}m{p.name}\033[0m"
+                        )
+                    else:
+                        properties.append(f"{p.name}")
+                print(", ".join(properties))
             case "Trade":
                 for p in player.properties:
                     print(p)
@@ -176,23 +201,3 @@ class Game:
             else:
                 print(self.squares[self.player_positions[player]].name)
             self.squares[self.player_positions[player]].execute_action(player)
-
-
-if __name__ == "__main__":
-    squares = []
-    chance = [Card.GoToGo("Advance to GO", "(Collect $200)")]
-    community_chest = [Card.GoToGo("Advance to GO", "(Collect $200)")]
-    game = Game(squares, chance, community_chest)
-    importer(
-        "/Users/alexchen/Projects/Monopoly/resources/squares.json",
-        squares,
-        chance,
-        community_chest,
-        game,
-    )
-    player = game.add_player(0, (33, 150, 243))
-    player = game.add_player(1, (226, 50, 107))
-    while len(game.players) > 1:
-        for p in game.players:
-            game.show_menu(p)
-    # print("\n".join([str(i) for i in squares]))
