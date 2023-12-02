@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from . import Player
-from . import Game
+from MonopolyGame.Common import Player
+from MonopolyGame.Common import Game
 
 
 class Card:

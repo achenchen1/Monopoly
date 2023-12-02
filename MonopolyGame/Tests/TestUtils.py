@@ -3,7 +3,7 @@ from MonopolyGame import Utils
 if __name__ == "__main__":
     x = list(range(10))
     print(x)
-    x = Utils.Ring(x)
+    x = Utils.DataClasses.Ring(x)
     print(x)
     x.append(10)
     x.append(11)

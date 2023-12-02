@@ -1,11 +1,13 @@
-from MonopolyGame import Card, Game
-from MonopolyGame.Utils import importer, Ring
+from MonopolyGame.Common import Card
+from MonopolyGame.GameTypes import CmdLineGame
+from MonopolyGame.Utils.DataClasses import Ring
+from MonopolyGame.Utils.Utils import importer
 
 if __name__ == "__main__":
     squares = []
     chance = [Card.GoToGo("Advance to GO", "(Collect $200)")]
     community_chest = [Card.GoToGo("Advance to GO", "(Collect $200)")]
-    game = Game.CmdLineGame(squares, chance, community_chest)
+    game = CmdLineGame.CmdLineGame(squares, chance, community_chest)
     importer(
         "/Users/alexchen/Projects/Monopoly/resources/squares.json",
         squares,

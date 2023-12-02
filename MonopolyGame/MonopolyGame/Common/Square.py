@@ -2,10 +2,10 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import DefaultDict, List, Set
 
-from . import Game
-from . import Result
-from . import Player
-from . import Card
+from MonopolyGame.Common import Game
+from MonopolyGame.Common import Result
+from MonopolyGame.Common import Player
+from MonopolyGame.Common import Card
 
 
 class Square:

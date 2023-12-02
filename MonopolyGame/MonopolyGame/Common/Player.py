@@ -1,9 +1,9 @@
 from __future__ import annotations
-from typing import Set, Tuple, List
+from typing import List
 
-from . import Game
-from . import Result
-from . import Square
+from MonopolyGame.Common import Game
+from MonopolyGame.Common import Result
+from MonopolyGame.Common import Square
 
 
 class Player:
