@@ -1,14 +1,16 @@
 from __future__ import annotations
 import random
-from .Result import Result
-from typing import Optional, Sequence, List, Tuple
 
+from typing import Optional, Sequence, List, Any
+
+from . import Card
 from . import Square
 from . import Player
 from . import Utils
+from . import Result
 
 
-class GlobalError(Result):
+class GlobalError(Result.Result):
     pass
 
 
@@ -21,6 +23,8 @@ class NoMoreHotels(GlobalError):
 
 
 class Game:
+    game_strings = {}
+
     def __init__(
         self,
         squares: List[Square.Square],
@@ -37,16 +41,6 @@ class Game:
 
         self.houses = 0
         self.hotels = 0
-        self.colors = {
-            "Brown": (139, 69, 19),
-            "Light Blue": (173, 216, 230),
-            "Pink": (255, 105, 180),
-            "Orange": (255, 140, 0),
-            "Red": (255, 0, 0),
-            "Yellow": (255, 215, 0),
-            "Green": (0, 255, 0),
-            "Blue": (0, 35, 102),
-        }
 
     def auction(
         self, property: Square.Buyable, starting_player: Player = None
@@ -56,17 +50,20 @@ class Game:
         bid_price = 1
         winner = None
 
-        if type(property) == Square.Property:
-            colors = self.colors[property.group]
-            print(
-                f"Bidding on \033[48;2;{colors[0]};{colors[1]};{colors[2]}m{property.name}\033[0m\n"
-            )
-        for p in players_in_auction:
-            player_choice = input(
-                f"\033[38;2;{p._hex_color[0]};{p._hex_color[1]};{p._hex_color[2]}mPlayer {p._id}\033[0m: current bid is {bid_price}. Enter new bid or select 'N'.\n> "
-            )
+        property_string = self.__class__.game_strings["auction_property_string"].format(
+            self.font_formatter(property)
+        )
+        self.player_output(property_string)
 
-            if player_choice == "N":
+        for p in players_in_auction:
+            auction_string = self.__class__.game_strings["auction_string"].format(
+                self.font_formatter(p), bid_price
+            )
+            self.player_output(auction_string)
+            player_choice = self.player_input()
+
+            if player_choice is False:
+                # For input validation - specifically check if it's False, not just Falsey
                 players_in_auction.pop(p)
             elif (new_bid := int(player_choice)) <= p.balance:
                 if new_bid > bid_price:
@@ -76,6 +73,35 @@ class Game:
                 raise NotImplementedError
 
         return winner
+
+    @staticmethod
+    def font_formatter(arg: Any) -> str:
+        return str(arg)
+
+    @staticmethod
+    def player_output(prompt: str) -> None:
+        raise NotImplementedError
+
+    @staticmethod
+    def player_input() -> None:
+        raise NotImplementedError
+
+    def list_properties(self, player: Player.Player) -> None:
+        raise NotImplementedError
+
+    def add_players(self, num_players: int = 1) -> List[Player.Player]:
+        if num_players < 1:
+            raise ValueError(
+                f"Can't add {num_players} players - num_players must be >= 1."
+            )
+
+        new_players = []
+        for i in range(num_players):
+            player = Player.Player(i + len(self.players))
+            new_players.append(player)
+            self.players.append(player)
+            self.player_positions[player] = 0
+        return new_players
 
     def trade(
         self,
@@ -87,68 +113,130 @@ class Game:
         # TODO
         pass
 
-    def add_player(self, id: int, color: Tuple[int]) -> Player.Player:
-        player = Player.Player(id, color)
-        self.players.append(player)
-        self.player_positions[player] = 0
-        return player
-
-    def show_menu(self, player, rolled: bool = False):
-        choices = ["Manage", "Trade"]
+    def show_menu(self, player: Player.Player, rolled: bool = False) -> bool:
+        choices = ["Manage", "Trade", "End Turn"]
         if not rolled:
             choices.append("Roll")
 
         action = None
         while action not in choices:
-            action = input(
-                f"\033[38;2;{player._hex_color[0]};{player._hex_color[1]};{player._hex_color[2]}mChoose an action: {', '.join(choices)}\033[0m\n> "
+            choice_string = self.__class__.game_strings["choose_action_string"].format(
+                self.font_formatter(player), ", ".join(choices)
             )
+            self.player_output(choice_string)
+            action = self.player_input()
 
-        # TODO
         match action:
             case "Manage":
-                # TODO: need to not cycle to next player
-                print("Properties:")
-                # TODO: make these colors print from the objects themselves
-                properties = []
-                for p in sorted(player.properties, key=lambda x: x.id):
-                    if type(p) == Square.Property:
-                        colors = self.colors[p.group]
-                        properties.append(
-                            f"\033[48;2;{colors[0]};{colors[1]};{colors[2]}m{p.name}\033[0m"
-                        )
-                    else:
-                        properties.append(f"{p.name}")
-                print(", ".join(properties))
+                self.player_output(self.list_properties(player))
             case "Trade":
-                for p in player.properties:
-                    print(p)
+                self.player_output(self.list_properties(player))
             case "Roll":
                 if not rolled:
                     self.roll_and_move(player)
+                    return True
+            case "End Turn":
+                # TODO - just because we rolled, doesn't mean we're done the turn
+                if not rolled:
+                    return False
+                return True
             case _:
-                raise ValueError
+                return False
 
     def roll_and_move(self, player: Player.Player):
         if not player._jailed:
-            dice_emojis = {1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅"}
             dice_1 = random.randint(1, 6)
             dice_2 = random.randint(1, 6)
             total_roll = dice_1 + dice_2
-            print(f"Rolled a {dice_emojis[dice_1]} and a {dice_emojis[dice_2]}")
+            self.player_output("Test")
+            self.player_output(
+                self.__class__.game_strings["dice_string"].format(dice_1, dice_2)
+            )
 
             self.player_positions[player] = (
                 self.player_positions[player] + total_roll
             ) % len(self.squares)
-            print(f"New position: {self.player_positions[player]}")
-            if (
-                type(s := self.squares[self.player_positions[player]])
-                == Square.Property
-            ):
-                colors = self.colors[s.group]
-                print(
-                    f"\033[48;2;{colors[0]};{colors[1]};{colors[2]}m{self.squares[self.player_positions[player]].name}\033[0m\n"
+            self.player_output(
+                self.__class__.game_strings["position_string"].format(
+                    self.player_positions[player]
                 )
+            )
+
+            square = self.squares[self.player_positions[player]]
+            self.player_output(
+                self.__class__.game_strings["new_position_string"].format(
+                    self.font_formatter(square)
+                )
+            )
+            square.execute_action(player)
+
+
+class CmdLineGame(Game):
+    game_strings = {
+        "auction_property_string": "Bidding on {}.",
+        "auction_string": "{}: current bid is {}. Enter new bid or select 'N'.",
+        "choose_action_string": "{}: Choose an action out of {}",
+        "dice_string": "Rolled a {} and a {}.",
+        "position_string": "New position: {}.",
+        "new_position_string": "Landed on {}.",
+    }
+
+    def update_square_colors(self):
+        square_colors = {
+            "Brown": (48, 139, 69, 19),
+            "Light Blue": (48, 173, 216, 230),
+            "Pink": (48, 255, 105, 180),
+            "Orange": (48, 255, 140, 0),
+            "Red": (48, 255, 0, 0),
+            "Yellow": (48, 255, 215, 0),
+            "Green": (48, 0, 255, 0),
+            "Blue": (48, 0, 35, 102),
+        }
+
+        for square in self.squares:
+            if hasattr(square, "group") and square.group in square_colors:
+                square._hex_color = square_colors[square.group]
+
+    @staticmethod
+    def font_formatter(arg: Any) -> str:
+        if hasattr(arg, "_hex_color"):
+            if len(arg._hex_color) == 4:
+                prefix = "\033[{};2;{};{};{}m".format(*arg._hex_color)
             else:
-                print(self.squares[self.player_positions[player]].name)
-            self.squares[self.player_positions[player]].execute_action(player)
+                prefix = "\033[38;2;{};{};{}m".format(*arg._hex_color)
+            suffix = "\033[0m"
+            return prefix + str(arg) + suffix
+        return str(arg)
+
+    @staticmethod
+    def player_output(prompt: str) -> None:
+        print(prompt)
+        return
+
+    @staticmethod
+    def player_input() -> None:
+        player_input = input("> ")
+
+        if player_input == "N":
+            player_input = False
+        elif player_input == "Y":
+            player_input = True
+
+        return player_input
+
+    def list_properties(self, player: Player.Player) -> str:
+        properties = []
+        for p in sorted(player.properties, key=lambda x: x.id):
+            properties.append(self.font_formatter(p))
+        return f"Properties: {', '.join(properties)}"
+
+    def add_players(self, num_players: int = 1) -> List[Player.Player]:
+        player_colors = [(33, 150, 243), (226, 50, 107)]
+
+        offset = len(self.players)
+        new_players = super().add_players(num_players)
+
+        for i, new_player in enumerate(new_players):
+            new_player._hex_color = player_colors[i + offset]
+
+        return new_players

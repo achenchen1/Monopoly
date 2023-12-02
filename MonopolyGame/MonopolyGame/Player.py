@@ -7,14 +7,16 @@ from . import Square
 
 
 class Player:
-    def __init__(self, id: int, color: Tuple[int] = tuple()):
+    def __init__(self, id: int):
         self._id: int = id
         self.square: int = 1
         self.balance: int = 1500
         # self.properties: Set[Square.Buyable] = {}
         self.properties: List[Square.Buyable] = []
         self._jailed: int = 0
-        self._hex_color: Tuple[int] = color
+
+    def __repr__(self) -> str:
+        return f"Player {self._id}"
 
     # Buying choices
     def buy_square(self, property: Square.Buyable) -> bool:

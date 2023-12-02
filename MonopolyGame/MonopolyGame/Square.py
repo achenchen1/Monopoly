@@ -13,7 +13,7 @@ class Square:
         return f"{self.id}: {self.name} ({self.__class__.__name__})"
 
     def __str__(self) -> str:
-        return self.__repr__()
+        return f"{self.name}"
 
     def __init__(self, id: int, name: str, game: Game.Game):
         self.id: int = id
