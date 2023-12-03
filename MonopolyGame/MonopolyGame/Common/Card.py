@@ -20,7 +20,9 @@ class Card:
 class GoToGo(Card):
     def execute(self, game: Game.Game, player: Player.Player) -> None:
         start_position = 0
-        while start_position < len(game.squares) and not isinstance(game.squares[start_position], Square.Start):
+        while start_position < len(game.squares) and not isinstance(
+            game.squares[start_position], Square.Start
+        ):
             start_position += 1
 
         game.player_positions[player] = start_position

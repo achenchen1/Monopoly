@@ -100,14 +100,20 @@ class Ring:
             self.head = self.hashed[value]
             return self.head
 
+
 class Result:
     default_message = ""
 
+    def __init__(self, msg: Optional[str] = None) -> None:
+        if msg is not None:
+            self.default_message = msg
+
+    # "Hack" - if default_message is set for this instance, use it. Otherwise, it defaults to the class message.
     def __str__(self) -> str:
-        return self.__class__.default_message
+        return self.default_message
 
     def __repr__(self) -> str:
-        return self.__class__.default_message
+        return self.default_message
 
 
 class Error(Result):

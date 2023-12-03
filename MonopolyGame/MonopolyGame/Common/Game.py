@@ -6,19 +6,23 @@ from typing import Optional, Sequence, List, Any
 from MonopolyGame.Utils.DataClasses import Ring
 from MonopolyGame.Common import Square
 from MonopolyGame.Common import Player
-from MonopolyGame.Utils.DataClasses import Result
+from MonopolyGame.Utils.DataClasses import Result, Ok, Error
 
 
-class GlobalError(Result):
-    pass
-
-
-class NoMoreHouses(GlobalError):
+class NoMoreHouses(Error):
     default_message = "No more houses left in the game."
 
 
-class NoMoreHotels(GlobalError):
+class NoMoreHotels(Error):
     default_message = "No more hotels left in the game."
+
+
+class TurnOver(Ok):
+    default_message = "End turn."
+
+
+class Rolled(Ok):
+    pass
 
 
 class Game:
@@ -112,7 +116,7 @@ class Game:
         # TODO
         pass
 
-    def show_menu(self, player: Player.Player, rolled: bool = False) -> bool:
+    def show_menu(self, player: Player.Player, rolled: bool = False) -> Result:
         choices = ["Manage", "Trade", "End Turn"]
         if not rolled:
             choices.append("Roll")
@@ -124,23 +128,26 @@ class Game:
             )
             self.player_output(choice_string)
             action = self.player_input()
+            # TODO - should we be exiting here? like below?
+            # return Error(f"Don't recognize choice: '{action}'")
 
         match action:
             case "Manage":
                 self.player_output(self.list_properties(player))
+                return Ok("Manage called")
             case "Trade":
                 self.player_output(self.list_properties(player))
+                return Ok("Trade called")
             case "Roll":
                 if not rolled:
                     self.roll_and_move(player)
-                    return True
+                    return Rolled()
             case "End Turn":
-                # TODO - just because we rolled, doesn't mean we're done the turn
                 if not rolled:
-                    return False
-                return True
+                    return Error("Can't end a turn without rolling.")
+                return TurnOver()
             case _:
-                return False
+                raise ValueError(f"Unrecognized action {action}")
 
     def roll_and_move(self, player: Player.Player):
         if not player._jailed:

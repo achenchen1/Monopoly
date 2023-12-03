@@ -1,6 +1,6 @@
-from MonopolyGame.Common import Card
+from MonopolyGame.Common import Card, Game
 from MonopolyGame.GameTypes import CmdLineGame
-from MonopolyGame.Utils.DataClasses import Ring
+from MonopolyGame.Utils.DataClasses import Ring, Error
 from MonopolyGame.Utils.Utils import importer
 
 if __name__ == "__main__":
@@ -19,11 +19,18 @@ if __name__ == "__main__":
     game.add_players(2)
     players = iter(Ring(game.players))
     p = next(players)
-    rolled = 0
+    rolled = False
 
     while len(game.players) > 1:
-        go_next = game.show_menu(p)
-        if go_next:
+        result = game.show_menu(p, rolled)
+        if isinstance(result, Game.TurnOver):
             p = next(players)
+            rolled = False
+        elif isinstance(result, Game.Rolled):
+            rolled = True
+        elif isinstance(result, Error):
+            print("Error", result)
+        else:
+            print(result)
 
     # print("\n".join([str(i) for i in squares]))
