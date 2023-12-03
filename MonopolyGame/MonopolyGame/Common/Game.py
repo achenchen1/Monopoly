@@ -6,10 +6,10 @@ from typing import Optional, Sequence, List, Any
 from MonopolyGame.Utils.DataClasses import Ring
 from MonopolyGame.Common import Square
 from MonopolyGame.Common import Player
-from MonopolyGame.Common import Result
+from MonopolyGame.Utils.DataClasses import Result
 
 
-class GlobalError(Result.Result):
+class GlobalError(Result):
     pass
 
 

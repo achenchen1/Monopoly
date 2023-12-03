@@ -3,9 +3,9 @@ from collections import defaultdict
 from typing import DefaultDict, List, Set
 
 from MonopolyGame.Common import Game
-from MonopolyGame.Common import Result
 from MonopolyGame.Common import Player
 from MonopolyGame.Common import Card
+from MonopolyGame.Utils.DataClasses import Result, Error, Ok
 
 
 class Square:
@@ -69,31 +69,31 @@ class Buyable(Square):
         rent_value = self._rent_value(multiplier)
         player.pay_rent(rent_value)
 
-    def mortgage(self) -> Result.Result:
+    def mortgage(self) -> Result:
         if self._mortgaged:
             return self.MortgageStatusError
         else:
             self._mortgaged = True
-            return Result.Ok
+            return Ok
 
-    def unmortgage(self) -> Result.Result:
+    def unmortgage(self) -> Result:
         if not self._mortgaged:
             return self.MortgageStatusError
         elif self.owner.balance >= 1.1 * self.mortgage_value:
             self._mortgaged = False
-            return Result.Ok
+            return Ok
         else:
             return self.InsufficientBalanceError
 
     def _rent_value(self, multiplier: int) -> int:
         raise NotImplementedError("Buyable properties must define their rent value")
 
-    class MortgageStatusError(Result.Error):
+    class MortgageStatusError(Error):
         default_message = (
             "Could not mortgage/unmortgage if already mortgated/unmortgaged."
         )
 
-    class InsufficientBalanceError(Result.Error):
+    class InsufficientBalanceError(Error):
         default_message = "Player doesn't have enough balance."
 
 
@@ -133,7 +133,7 @@ class Property(Buyable):
             else:
                 return self.rent[self.buildings]
 
-    def buy_building(self) -> Result.Error:
+    def buy_building(self) -> Error:
         if self._mortgaged:
             return self.BuildingOnMortgagedError
         elif self.buildings == 5:
@@ -151,9 +151,9 @@ class Property(Buyable):
             Game.hotels -= 1
         else:
             Game.houses += 1
-        return Result.NoError
+        return Ok
 
-    def sell_building(self) -> Result.Error:
+    def sell_building(self) -> Error:
         if self.buildings == 0:
             return self.BuildingOutOfBoundsError
         elif any(other.buildings > self.buildings for other in self.group_list):
@@ -169,7 +169,7 @@ class Property(Buyable):
             Game.houses += 1
 
         self.buildings -= 1
-        return Result.NoError
+        return Ok
 
     def unmortgage(self, balance: int) -> Result:
         if any(other.buildings > 0 for other in self.group_list):
@@ -177,13 +177,13 @@ class Property(Buyable):
             return self.BuildingOnMortgagedError
         return super().unmortgage(balance)
 
-    class BuildingOnMortgagedError(Result.Error):
+    class BuildingOnMortgagedError(Error):
         default_message = "Cannot build buildings on a mortgaged property"
 
-    class BuildingOutOfBoundsError(Result.Error):
+    class BuildingOutOfBoundsError(Error):
         default_message = "Cannot buy or sell another property - would lead to too many or too few buildings."
 
-    class UnequalNumberOfBuildingsError(Result.Error):
+    class UnequalNumberOfBuildingsError(Error):
         default_message = "Cannot buy or sell another property - would lead to imbalance of buildings in the same group."
 
 

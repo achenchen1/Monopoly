@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from MonopolyGame.Common import Player
 from MonopolyGame.Common import Game
+from MonopolyGame.Common import Square
 
 
 class Card:
-    def __init__(self, name, description) -> None:
+    def __init__(self, name: str, description: str) -> None:
         # TODO : type hinting
-        self.name = name
+        self.name: str = name
         self.description = description
 
     def execute(self, game: Game.Game, player: Player.Player) -> None:
@@ -18,6 +19,9 @@ class Card:
 
 class GoToGo(Card):
     def execute(self, game: Game.Game, player: Player.Player) -> None:
-        # TODO: is GO always 0?
-        game.player_positions[player] = 0
-        game.squares[0].execute_action(player)
+        start_position = 0
+        while start_position < len(game.squares) and not isinstance(game.squares[start_position], Square.Start):
+            start_position += 1
+
+        game.player_positions[player] = start_position
+        game.squares[start_position].execute_action(player)

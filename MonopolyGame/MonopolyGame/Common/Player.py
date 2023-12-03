@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import List
 
 from MonopolyGame.Common import Game
-from MonopolyGame.Common import Result
 from MonopolyGame.Common import Square
+from MonopolyGame.Utils.DataClasses import Result, Error, Ok
 
 
 class Player:
@@ -39,7 +39,7 @@ class Player:
         return False
 
     # Building choices
-    def buy_building(self, property: Square.Property) -> Result.Error:
+    def buy_building(self, property: Square.Property) -> Error:
         if property not in self.properties:
             return Player.OwnershipError
 
@@ -55,7 +55,7 @@ class Player:
             return Player.OwnershipError
 
         if result := property.sell_building():
-            return Result.Ok
+            return Ok
         elif result == Game.NoMoreHouses:
             raise NotImplementedError("Need to add a 'force sell' function")
         else:
@@ -82,5 +82,5 @@ class Player:
         else:
             self.balance -= rent_value
 
-    class OwnershipError(Result.Result):
+    class OwnershipError(Result):
         default_message = "Property not owned by player."
