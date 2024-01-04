@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, List
 
-from MonopolyGame.Common import Game
+from MonopolyGame.Common import Game, Player
 
 
 class CmdLineGame(Game.Game):

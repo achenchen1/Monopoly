@@ -20,6 +20,7 @@ class Card:
 class GoToGo(Card):
     def execute(self, game: Game.Game, player: Player.Player) -> None:
         start_position = 0
+        # On the off-chance that start_position = 0 does not correspond to the Go square, cycle through all squares.
         while start_position < len(game.squares) and not isinstance(
             game.squares[start_position], Square.Start
         ):

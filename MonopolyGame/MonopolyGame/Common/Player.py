@@ -13,6 +13,7 @@ class Player:
         self.balance: int = 1500
         # self.properties: Set[Square.Buyable] = {}
         self.properties: List[Square.Buyable] = []
+        self.get_out_of_jail_cards = []
         self._jailed: int = 0
 
     def __repr__(self) -> str:
@@ -76,7 +77,38 @@ class Player:
         if property.unmortgage(self.balance):
             self.balance -= 1.1 * property.mortgage_value
 
+    def modify_balance(self, delta: int, force: bool = True):
+        """Safe function used to modify the player's balance
+
+        :param delta: The amount to add (positive) or subtract (negative) to the player's balance
+        :type delta: int
+        :param force: whether or not this is a forcing transaction. For example, game taxes are forcing. Defaults to True
+        :type force: bool, optional
+        :raises ValueError: TODO
+        """
+        if self.balance + delta < 0:
+            if force:
+                while self.balance + delta < 0:
+                    self.manage()
+        else:
+            self.balance += delta
+
+    def manage(self) -> bool:
+        # TODO: function that loops until player ends. Allows players to modify properties and whatnot.
+        # Returns True if all decisions are finalized, False otherwise. (if False, should roll back change.)
+        pass
+
+    def bankrupt(self, receiving_player: Player = None):
+        # Plan to implement this:
+        # Go barebones.
+        # * if bank is receiving player, auction everything.
+        # * if another player is receiving player, do the normal mortgage thing.
+        # * THE CORNER CASE THAT THE SUBSEQUENT PLAYER CANNOT PAY: technically, bank should auction everythign.
+        #   This requires that the subsequent player be given the chance to unmortgage selectively first.
+        pass
+
     def pay_rent(self, rent_value: int):
+        # TODO - according to official rules, the owner of the property must point out the player owes rent. Something to consider.
         if self.balance < rent_value:
             raise NotImplementedError
         else:

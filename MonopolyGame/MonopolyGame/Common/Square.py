@@ -53,7 +53,7 @@ class Buyable(Square):
         if self.owner is None:
             new_owner = self.offer(player)
             if new_owner is not None:
-                # TODO
+                # TODO - else condition
                 new_owner.properties.append(self)
         elif self.owner != player and not self._mortgaged:
             self.charge_rent(player, multiplier)
