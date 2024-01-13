@@ -29,7 +29,7 @@ if __name__ == "__main__":
         elif isinstance(result, Game.Rolled):
             rolled = True
         elif isinstance(result, Error):
-            print("Error", result)
+            print("Error:", result)
         else:
             print(result)
 

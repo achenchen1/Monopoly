@@ -87,7 +87,7 @@ class Buyable(Square):
 
     def _rent_value(self, multiplier: int) -> int:
         raise NotImplementedError("Buyable properties must define their rent value")
-    
+
     def liquidate_value(self) -> int:
         if self._mortgaged:
             return 0
@@ -164,7 +164,7 @@ class Property(Buyable):
             return self.BuildingOutOfBoundsError
         elif any(other.buildings > self.buildings for other in self.group_list):
             return self.UnequalNumberOfBuildingsError
-        
+
         if self.buildings == 5:
             if Game.houses < 4:
                 return Game.NoMoreHouses
@@ -182,14 +182,13 @@ class Property(Buyable):
             # TODO
             return self.BuildingOnMortgagedError
         return super().unmortgage(balance)
-    
+
     def liquidate_value(self) -> int:
         total = super().liquidate_value()
         if not self._mortgaged:
             total += self.buildings * self.building_cost // 2
             # TODO: think about the logic for selling all buildings and bank building availability
         return total
-
 
     class BuildingOnMortgagedError(Error):
         default_message = "Cannot build buildings on a mortgaged property"

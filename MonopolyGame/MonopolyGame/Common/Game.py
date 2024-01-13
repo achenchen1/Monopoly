@@ -34,7 +34,7 @@ class Game:
         chance_cards: List,
         community_chest_cards: List,
     ) -> None:
-        self.players = []
+        self.players: List[Player.Player] = []
         self.squares = squares
         # TODO: Ring buffer
         self.chance_cards = chance_cards
@@ -106,14 +106,24 @@ class Game:
             self.player_positions[player] = 0
         return new_players
 
-    def trade(
-        self,
-        l: Player,
-        r: Player,
-        l_assets: Sequence[int, Square.Buyable],
-        r_assets: Sequence[int, Square.Buyable],
-    ):
-        pass
+    def trade(self, trading_player):
+        formatted_eligible_players = [
+            f"{p._id}: {self.font_formatter(p)}"
+            for p in sorted(self.players, key=lambda x: x._id)
+            if p != trading_player
+        ]
+
+        id_to_players = {str(p._id): p for p in self.players if p != trading_player}
+        player = None
+
+        while str(player) not in id_to_players:
+            player = input(
+                "Choose a player in the game:\n{}\n".format(
+                    "\n".join(formatted_eligible_players)
+                )
+            )
+
+        return player
 
     def show_menu(self, player: Player.Player, rolled: bool = False) -> Result:
         choices = ["Manage", "Trade", "End Turn"]
@@ -142,15 +152,16 @@ class Game:
                 self.player_output(self.list_properties(player))
                 return Ok("Manage called")
             case "Trade":
-                player = input(
-                    f"Choose a player in the game: {', '.join(str(p) for p in self.players if p != player)}\n"
-                )
-
                 self.player_output(self.list_properties(player))
+                self.trade(player)
                 return Ok("Trade called")
             case "Roll":
                 if not rolled:
-                    self.roll(player)
+                    roll = self.roll()
+                    if player._jailed:
+                        self.jail_roll(player, roll)
+                    else:
+                        self.move(player, sum(roll))
                     return Rolled()
             case "End Turn":
                 if not rolled:

@@ -113,13 +113,13 @@ class Player:
         # * THE CORNER CASE THAT THE SUBSEQUENT PLAYER CANNOT PAY: technically, bank should auction everythign.
         #   This requires that the subsequent player be given the chance to unmortgage selectively first.
         pass
-    
+
     def liquidate_value(self) -> int:
         total = 0
         for b in self.properties:
             total += b.liquidate_value()
             # TODO
-        
+
         return total
 
     def pay_rent(self, rent_value: int):
