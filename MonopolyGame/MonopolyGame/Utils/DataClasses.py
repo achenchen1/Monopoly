@@ -102,18 +102,15 @@ class Ring:
 
 
 class Result:
-    default_message = ""
-
-    def __init__(self, msg: Optional[str] = None) -> None:
-        if msg is not None:
-            self.default_message = msg
+    def __init__(self, value: Optional[Any] = None) -> None:
+        self.value = value
 
     # "Hack" - if default_message is set for this instance, use it. Otherwise, it defaults to the class message.
     def __str__(self) -> str:
-        return self.default_message
+        return str(self.value)
 
     def __repr__(self) -> str:
-        return self.default_message
+        return str(self.value)
 
 
 class Error(Result):

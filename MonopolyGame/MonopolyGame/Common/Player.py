@@ -47,15 +47,17 @@ class Player:
         if self.balance >= property.building_cost:
             result = property.buy_building()
             if result:
-                self.balance -= property.building_cost
+                self.balance -= result.value
             else:
                 raise NotImplementedError
 
     def sell_building(self, property: Square.Property):
+        # TODO - we don't increment the player's cash lmao
         if property not in self.properties:
             return Player.OwnershipError
 
         if result := property.sell_building():
+            self.balance += result.value
             return Ok
         elif result == Game.NoMoreHouses:
             raise NotImplementedError("Need to add a 'force sell' function")
@@ -84,14 +86,19 @@ class Player:
         :type delta: int
         :param force: whether or not this is a forcing transaction. For example, game taxes are forcing. Defaults to True
         :type force: bool, optional
-        :raises ValueError: TODO
+        :raises ValueError: TODO - maybe should be a separate error type.
         """
         if self.balance + delta < 0:
             if force:
+                result = ValueError("Insufficient value")
                 while self.balance + delta < 0:
-                    self.manage()
+                    result = self.manage()
+                return result
+            else:
+                return ValueError("Insufficient value")
         else:
             self.balance += delta
+        return Ok
 
     def manage(self) -> bool:
         # TODO: function that loops until player ends. Allows players to modify properties and whatnot.
@@ -106,6 +113,14 @@ class Player:
         # * THE CORNER CASE THAT THE SUBSEQUENT PLAYER CANNOT PAY: technically, bank should auction everythign.
         #   This requires that the subsequent player be given the chance to unmortgage selectively first.
         pass
+    
+    def liquidate_value(self) -> int:
+        total = 0
+        for b in self.properties:
+            total += b.liquidate_value()
+            # TODO
+        
+        return total
 
     def pay_rent(self, rent_value: int):
         # TODO - according to official rules, the owner of the property must point out the player owes rent. Something to consider.
