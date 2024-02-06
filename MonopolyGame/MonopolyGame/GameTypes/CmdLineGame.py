@@ -41,27 +41,22 @@ class CmdLineGame(Game.Game):
             return prefix + str(arg) + suffix
         return str(arg)
 
-    @staticmethod
-    def player_output(prompt: str) -> None:
-        print(prompt)
-        return
+    # I/O fragment
+    # @staticmethod
+    # def player_output(prompt: str) -> None:
+    #     print(prompt)
+    #     return
 
-    @staticmethod
-    def player_input() -> None:
-        player_input = input("> ")
+    # @staticmethod
+    # def player_input() -> None:
+    #     player_input = input("> ")
 
-        if player_input == "N":
-            player_input = False
-        elif player_input == "Y":
-            player_input = True
+    #     if player_input == "N":
+    #         player_input = False
+    #     elif player_input == "Y":
+    #         player_input = True
 
-        return player_input
-
-    def list_properties(self, player: Player.Player) -> str:
-        properties = []
-        for p in sorted(player.properties, key=lambda x: x.id):
-            properties.append(self.font_formatter(p))
-        return f"Properties: {', '.join(properties)}"
+    #     return player_input
 
     def add_players(self, num_players: int = 1) -> List[Player.Player]:
         player_colors = [(33, 150, 243), (226, 50, 107)]
@@ -69,7 +64,14 @@ class CmdLineGame(Game.Game):
         offset = len(self.players)
         new_players = super().add_players(num_players)
 
+        def list_properties(player: Player.Player) -> str:
+            properties = []
+            for p in sorted(player.properties, key=lambda x: x.id):
+                properties.append(CmdLineGame.font_formatter(p))
+            return f"Properties: {', '.join(properties)}"
+
         for i, new_player in enumerate(new_players):
             new_player._hex_color = player_colors[i + offset]
+        Player.Player.list_properties = list_properties
 
         return new_players

@@ -56,14 +56,18 @@ class Game:
         property_string = self.__class__.game_strings["auction_property_string"].format(
             self.font_formatter(property)
         )
-        self.player_output(property_string)
+        # self.player_output(property_string)
+        print(property_string)
 
         for p in players_in_auction:
+            # I/O fragment
             auction_string = self.__class__.game_strings["auction_string"].format(
                 self.font_formatter(p), bid_price
             )
-            self.player_output(auction_string)
-            player_choice = self.player_input()
+            # self.player_output(auction_string)
+            # player_choice = self.player_input()
+            print(auction_string)
+            player_choice = input()
 
             if player_choice is False:
                 # For input validation - specifically check if it's False, not just Falsey
@@ -81,16 +85,15 @@ class Game:
     def font_formatter(arg: Any) -> str:
         return str(arg)
 
-    @staticmethod
-    def player_output(prompt: str) -> None:
-        raise NotImplementedError
+    # I/O fragment
+    # @staticmethod
+    # def player_output(prompt: str) -> None:
+    #     raise NotImplementedError
 
-    @staticmethod
-    def player_input() -> None:
-        raise NotImplementedError
-
-    def list_properties(self, player: Player.Player) -> None:
-        raise NotImplementedError
+    # I/O fragment
+    # @staticmethod
+    # def player_input() -> None:
+    #     raise NotImplementedError
 
     def add_players(self, num_players: int = 1) -> List[Player.Player]:
         if num_players < 1:
@@ -141,18 +144,26 @@ class Game:
             choice_string = self.__class__.game_strings["choose_action_string"].format(
                 self.font_formatter(player), ", ".join(choices)
             )
-            self.player_output(choice_string)
-            action = self.player_input()
+            # I/O fragment
+            # self.player_output(choice_string)
+            # self.player_output("Balance: " + str(player.balance))
+            # action = self.player_input()
+            print(choice_string)
+            print("Balance: " + str(player.balance))
+            action = input()
+
             # TODO - should we be exiting here? like below?
             # return Error(f"Don't recognize choice: '{action}'")
 
         match action:  # We can safely match action here, as we check action validity in the chunk of code above
             # Non-jail
             case "Manage":
-                self.player_output(self.list_properties(player))
+                player.manage()
                 return Ok("Manage called")
             case "Trade":
-                self.player_output(self.list_properties(player))
+                # I/O fragment
+                # self.player_output(self.list_properties(player))
+                print(player.list_properties())
                 self.trade(player)
                 return Ok("Trade called")
             case "Roll":
@@ -174,7 +185,11 @@ class Game:
     def roll(self):
         dice_1 = random.randint(1, 6)
         dice_2 = random.randint(1, 6)
-        self.player_output(
+        # I/O fragment
+        # self.player_output(
+        #     self.__class__.game_strings["dice_string"].format(dice_1, dice_2)
+        # )
+        print(
             self.__class__.game_strings["dice_string"].format(dice_1, dice_2)
         )
 
@@ -184,14 +199,22 @@ class Game:
         self.player_positions[player] = (
             self.player_positions[player] + total_roll
         ) % len(self.squares)
-        self.player_output(
+        # self.player_output(
+        #     self.__class__.game_strings["position_string"].format(
+        #         self.player_positions[player]
+        #     )
+        # )
+        # I/O fragment
+        print(
             self.__class__.game_strings["position_string"].format(
                 self.player_positions[player]
             )
         )
 
         square = self.squares[self.player_positions[player]]
-        self.player_output(
+        # I/O fragment
+        # self.player_output(
+        print(
             self.__class__.game_strings["new_position_string"].format(
                 self.font_formatter(square)
             )

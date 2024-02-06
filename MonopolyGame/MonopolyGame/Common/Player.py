@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Sequence
 
 from MonopolyGame.Common import Game
 from MonopolyGame.Common import Square
@@ -90,17 +90,27 @@ class Player:
         """
         if self.balance + delta < 0:
             if force:
-                result = ValueError("Insufficient value")
                 while self.balance + delta < 0:
-                    result = self.manage()
-                return result
-            else:
-                return ValueError("Insufficient value")
+                    self.manage()
+                return Ok
+            return ValueError("Insufficient value")
         else:
             self.balance += delta
         return Ok
 
-    def manage(self) -> bool:
+    def manage(self) -> Sequence[int, Result]:
+        # TODO - choice should be checked to ensure type safety.
+        # TODO - properties should display number of houses/hotels
+        # TODO - "print" isn't going to work for all interfaces.
+        print(self.list_properties())
+        print(self.balance)
+        choice = int(input("\n".join(f"{i}: {j}" for i, j in enumerate(self.properties)) + "\n"))
+        
+
+        # import pdb
+        # pdb.set_trace()
+        # TODO: shoudl return a Result
+        # TODO: devise an interface that allows list_properties from Game (or move list_properties here, which probably makes more sense)
         # TODO: function that loops until player ends. Allows players to modify properties and whatnot.
         # Returns True if all decisions are finalized, False otherwise. (if False, should roll back change.)
         pass

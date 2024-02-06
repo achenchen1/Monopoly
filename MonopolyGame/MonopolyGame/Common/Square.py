@@ -51,10 +51,11 @@ class Buyable(Square):
 
     def execute_action(self, player: Player, multiplier: int = 1) -> None:
         if self.owner is None:
-            new_owner = self.offer(player)
+            new_owner: Player = self.offer(player)
             if new_owner is not None:
                 # TODO - else condition
-                new_owner.properties.append(self)
+                if new_owner.modify_balance(-self.value):
+                    new_owner.properties.append(self)
         elif self.owner != player and not self._mortgaged:
             self.charge_rent(player, multiplier)
 
