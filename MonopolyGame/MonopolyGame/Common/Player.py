@@ -190,13 +190,63 @@ class Player:
         # Returns True if all decisions are finalized, False otherwise. (if False, should roll back change.)
 
     def bankrupt(self, receiving_player: Player = None):
-        # Plan to implement this:
-        # Go barebones.
-        # * if bank is receiving player, auction everything.
-        # * if another player is receiving player, do the normal mortgage thing.
-        # * THE CORNER CASE THAT THE SUBSEQUENT PLAYER CANNOT PAY: technically, bank should auction everythign.
-        #   This requires that the subsequent player be given the chance to unmortgage selectively first.
-        pass
+        """Player goes bankrupt
+
+        :param receiving_player: the creditor, defaults to None (to indicate the bank)
+        :type receiving_player: Player, optional
+        """
+        # TODO - better interfacing
+        print(f"{self} has insufficient balance and insufficient net worth - bankrupt!")
+
+        # Get out of the game
+        self._game.players.remove(self)
+
+        # Reset all buyables and get rid of all buildings on properties
+        for p in self.properties:
+            if type(p) == Square.Property:
+                # If these properties are mortgaged but have buildings, then this is undefined - but then again, mortgaged properties should not have buildings.
+                self.balance += p.buildings * p.building_cost // 2
+            p.reset()
+        self.properties = []
+
+        # Give all of our cash and get-out-of-jails to the receiving player
+        receiving_player.balance += self.balance
+        receiving_player.get_out_of_jail_cards.extend(self.get_out_of_jail_cards)
+        self.balance = 0
+
+        # Receiving player has to pay some interest
+        mortgage_interest = int(
+            sum(0.1 * b.mortgage_value for b in self.properties if b._mortgaged)
+        )
+
+        if receiving_player.balance > mortgage_interest:
+            # Receiving player has sufficient cash
+            receiving_player.balance -= mortgage_interest
+            return
+        elif (
+            receiving_player.balance + receiving_player.liquidate_value()
+            > mortgage_interest
+        ):
+            # Receiving player has insufficient cash, but enough net worth
+            # TODO - improve interfacing here
+            choice = None
+            while choice not in ["Y", "N"]:
+                choice = input("Manage properties to absorb all assets? Y/N\n")
+
+            if choice == "Y":
+                receiving_player.modify_balance(-mortgage_interest, force=True)
+                # TODO - return value
+                return
+
+        # Going back to bank
+        for p in self.properties:
+            winner, balance = self._game.auction(p, receiving_player)
+            if winner:
+                winner.modify_balance(-balance)
+                p.owner = winner
+
+        # TODO - return value
+        return
 
     def liquidate_value(self) -> int:
         total = 0

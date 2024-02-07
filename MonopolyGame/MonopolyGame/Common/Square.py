@@ -103,6 +103,10 @@ class Buyable(Square):
         else:
             return self.mortgage_value
 
+    def reset(self) -> None:
+        self._mortgaged = False
+        self.owner = None
+
     class MortgageStatusError(Error):
         default_message = (
             "Could not mortgage/unmortgage if already mortgated/unmortgaged."
@@ -199,6 +203,15 @@ class Property(Buyable):
             # TODO: think about the logic for selling all buildings and bank building availability
         return total
 
+    def reset(self) -> None:
+        super().reset()
+
+        if self.buildings == 5:
+            self.game.hotels += 1
+        else:
+            self.game.houses += self.buildings
+        self.buildings = 0
+
     class BuildingOnMortgagedError(Error):
         default_message = "Cannot build buildings on a mortgaged property"
 
@@ -222,6 +235,11 @@ class Railroad(Buyable):
         # TODO - need to modify how owners are added
         railroads_owned = len(self.__class__.owners[self.owner])
         return multiplier * self.rent[railroads_owned - 1]
+
+    def reset(self):
+        # See TODO - need to modify how owners are added
+        super().reset()
+        self.__class__.owners[self.owner].remove(self)
 
 
 class Utility(Buyable):
@@ -247,6 +265,11 @@ class Utility(Buyable):
             return 4 * multiplier
         else:
             raise ValueError(f"Cannot own {utilities_owned} utilities and charge rent!")
+
+    def reset(self):
+        # See TODO - need to modify how owners are added
+        super().reset()
+        self.__class__.owners[self.owner].remove(self)
 
 
 class CardSquare(Square):
