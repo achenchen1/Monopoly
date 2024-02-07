@@ -55,22 +55,28 @@ class Buyable(Square):
         if self.owner is None:
             new_owner: Player = self.offer(player)
             if new_owner is not None:
-                # TODO - else condition
-                if new_owner.modify_balance(-self.value):
-                    new_owner.properties.append(self)
+                new_owner.properties.append(self)
         elif self.owner != player and not self._mortgaged:
             self.charge_rent(player, multiplier)
 
-    def offer(self, player: Player) -> None:
+    def offer(self, player: Player.Player) -> Player.Player:
         if player.buy_square(self):
             self.owner = player
+            self.owner.modify_balance(-self.value, force=True)
         else:
-            self.owner = self.game.auction(self, player)
+            self.owner, price = self.game.auction(self, player)
+            # TODO - we should never acutally need force here. Check this, and then take force out.
+            if self.owner:
+                self.owner.modify_balance(-price, force=True)
         return self.owner
 
-    def charge_rent(self, player: Player, multiplier: int) -> int:
+    def charge_rent(self, player: Player.Player, multiplier: int) -> int:
         rent_value = self._rent_value(multiplier)
-        player.pay_rent(rent_value)
+        if player.liquidate_value() + player.balance >= rent_value:
+            player.pay_rent(rent_value)
+        else:
+            # TODO - player could technically trade out of this.
+            player.bankrupt(self.owner)
 
     def mortgage(self) -> Result:
         if self._mortgaged:
@@ -82,7 +88,7 @@ class Buyable(Square):
     def unmortgage(self) -> Result:
         if not self._mortgaged:
             return self.MortgageStatusError
-        elif self.owner.balance >= 1.1 * self.mortgage_value:
+        elif self.owner.balance >= int(1.1 * self.mortgage_value):
             self._mortgaged = False
             return Ok
         else:
@@ -206,16 +212,11 @@ class Property(Buyable):
 class Railroad(Buyable):
     owners: DefaultDict[Player.Player, Set[Railroad]] = defaultdict(set)
 
-    def __init__(
-        self,
-        id: int,
-        name: str,
-        value: int,
-        rent: List[int],
-        mortgage_value: int,
-        game: Game.Game,
-    ):
-        super().__init__(id, name, value, rent, mortgage_value, game)
+    def offer(self, player: Player.Player) -> Player.Player:
+        new_owner = super().offer(player)
+        if new_owner is not None:
+            self.__class__.owners[new_owner].add(self)
+        return new_owner
 
     def _rent_value(self, multiplier: int) -> int:
         # TODO - need to modify how owners are added
@@ -229,6 +230,12 @@ class Utility(Buyable):
     def __init__(self, id: int, name: str, value: int, mortgage_value: int, game: Game):
         # Utilities don't have a set rent
         super().__init__(id, name, value, 0, mortgage_value, game)
+
+    def offer(self, player: Player.Player) -> Player.Player:
+        new_owner = super().offer(player)
+        if new_owner is not None:
+            self.__class__.owners[new_owner].add(self)
+        return new_owner
 
     def _rent_value(self, multiplier: int) -> int:
         # See TODO - need to modify how owners are added
