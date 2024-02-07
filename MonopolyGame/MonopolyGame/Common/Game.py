@@ -50,7 +50,7 @@ class Game:
     ) -> Optional[Player.Player]:
         players_in_auction = Ring(self.players)
         players_in_auction.set_head(starting_player)
-        bid_price = 1
+        bid_price = 0
         winner = None
 
         property_string = self.__class__.game_strings["auction_property_string"].format(
@@ -69,7 +69,7 @@ class Game:
             print(auction_string)
             player_choice = input()
 
-            if player_choice is False:
+            if player_choice == "N":
                 # For input validation - specifically check if it's False, not just Falsey
                 players_in_auction.pop(p)
             elif (new_bid := int(player_choice)) <= p.balance:
@@ -79,7 +79,10 @@ class Game:
             else:
                 raise NotImplementedError
 
-        return winner
+            if len(players_in_auction) == 1 and winner is not None:
+                return winner, bid_price
+
+        return winner, bid_price
 
     @staticmethod
     def font_formatter(arg: Any) -> str:
@@ -103,7 +106,7 @@ class Game:
 
         new_players = []
         for i in range(num_players):
-            player = Player.Player(i)
+            player = Player.Player(i, self)
             new_players.append(player)
             self.players.append(player)
             self.player_positions[player] = 0
@@ -189,9 +192,7 @@ class Game:
         # self.player_output(
         #     self.__class__.game_strings["dice_string"].format(dice_1, dice_2)
         # )
-        print(
-            self.__class__.game_strings["dice_string"].format(dice_1, dice_2)
-        )
+        print(self.__class__.game_strings["dice_string"].format(dice_1, dice_2))
 
         return dice_1, dice_2
 

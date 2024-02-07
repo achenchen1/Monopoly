@@ -3,3 +3,4 @@ c
 *.egg-info
 env
 multiplayer_env
+cpp

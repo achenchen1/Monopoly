@@ -1,4 +1,4 @@
-from MonopolyGame.Common import Card, Game
+from MonopolyGame.Common import Card, Game, Square
 from MonopolyGame.GameTypes import CmdLineGame
 from MonopolyGame.Utils.DataClasses import Ring, Error
 from MonopolyGame.Utils.Utils import importer
@@ -17,6 +17,11 @@ if __name__ == "__main__":
     )
     game.update_square_colors()
     game.add_players(2)
+    for square in game.squares:
+        if issubclass(type(square), Square.Buyable):
+            game.players[0].properties.append(square)
+        square.owner = game.players[0]
+    game.players[1].balance = 0
     players = iter(Ring(game.players))
     p = next(players)
     rolled = False

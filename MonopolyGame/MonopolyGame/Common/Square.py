@@ -21,7 +21,7 @@ class Square:
         self.game: Game.Game = game
 
     def __eq__(self, other):
-        return self == other
+        return type(self) == type(other) and self == other
 
     def __hash__(self):
         return self.id
@@ -43,7 +43,9 @@ class Buyable(Square):
         super().__init__(id, name, game)
         self.rent: List[int] = rent  # How much each tier costs - houses, e.g.
         self.value: int = value  # How much this property costs
-        self.mortgage_value: int = mortgage_value
+        self.mortgage_value: int = (
+            mortgage_value  # Note - unmortgage value is always 1.1*mortgage_value
+        )
 
         self.owner: Player = None
 
@@ -147,17 +149,17 @@ class Property(Buyable):
             return self.BuildingOutOfBoundsError
         elif any(other.buildings < self.buildings for other in self.group_list):
             return self.UnequalNumberOfBuildingsError
-        elif self.buildings == 4 and Game.hotels == 0:
+        elif self.buildings == 4 and self.game.hotels == 0:
             return Game.NoMoreHotels
-        elif Game.houses == 0:
+        elif self.game.houses == 0:
             return Game.NoMoreHouses
 
         self.buildings += 1
         if self.buildings == 4:
-            Game.houses += 4
-            Game.hotels -= 1
+            self.game.houses += 4
+            self.game.hotels -= 1
         else:
-            Game.houses += 1
+            self.game.houses += 1
         return Ok(self.building_cost)
 
     def sell_building(self) -> Result:
@@ -167,22 +169,22 @@ class Property(Buyable):
             return self.UnequalNumberOfBuildingsError
 
         if self.buildings == 5:
-            if Game.houses < 4:
+            if self.game.houses < 4:
                 return Game.NoMoreHouses
             else:
-                Game.houses -= 4
-                Game.hotels += 1
+                self.game.houses -= 4
+                self.game.hotels += 1
         else:
-            Game.houses += 1
+            self.game.houses += 1
 
         self.buildings -= 1
         return Ok(self.building_cost // 2)
 
-    def unmortgage(self, balance: int) -> Result:
+    def unmortgage(self) -> Result:
         if any(other.buildings > 0 for other in self.group_list):
             # TODO
             return self.BuildingOnMortgagedError
-        return super().unmortgage(balance)
+        return super().unmortgage()
 
     def liquidate_value(self) -> int:
         total = super().liquidate_value()
@@ -224,7 +226,12 @@ class Railroad(Buyable):
 class Utility(Buyable):
     owners: DefaultDict[Player.Player, Set[Utility]] = defaultdict(set)
 
+    def __init__(self, id: int, name: str, value: int, mortgage_value: int, game: Game):
+        # Utilities don't have a set rent
+        super().__init__(id, name, value, 0, mortgage_value, game)
+
     def _rent_value(self, multiplier: int) -> int:
+        # See TODO - need to modify how owners are added
         # Treat "multiplier" as the dice roll
         utilities_owned = self.__class__.owners[self.owner]
         if utilities_owned == 1:
@@ -248,7 +255,7 @@ class CardSquare(Square):
 
 
 class Start(Square):
-    def execute_action(self, player: Player):
+    def execute_action(self, player: Player.Player):
         player.balance += 200
 
 
@@ -257,12 +264,12 @@ class Tax(Square):
         super().__init__(id, name, game)
         self.value = value
 
-    def execute_action(self, player: Player):
+    def execute_action(self, player: Player.Player):
         # TODO - should probably just work on the player "-" operator
-        player.balance -= self.value
+        player.modify_balance(-self.value, force=True)
 
 
 class FreeParking(Square):
-    def execute_action(self, player: Player):
+    def execute_action(self, player: Player.Player):
         # Do nothing
         return

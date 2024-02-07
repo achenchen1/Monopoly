@@ -37,6 +37,16 @@ def importer(input_file, squares, chance, community_chest, game):
                             game,
                         )
                     )
+                case "U":
+                    squares.append(
+                        Square.Utility(
+                            k,
+                            v["name"],
+                            v["value"],
+                            v["mortgage_value"],
+                            game,
+                        )
+                    )
                 case "T":
                     squares.append(Square.Tax(k, v["name"], v["value"], game))
                 case "CC":

@@ -7,7 +7,7 @@ from MonopolyGame.Utils.DataClasses import Result, Error, Ok
 
 
 class Player:
-    def __init__(self, id: int):
+    def __init__(self, id: int, game: Game.Game):
         self._id: int = id
         self.square: int = 1
         self.balance: int = 1500
@@ -15,6 +15,7 @@ class Player:
         self.properties: List[Square.Buyable] = []
         self.get_out_of_jail_cards = []
         self._jailed: int = 0
+        self._game: Game.Game = game
 
     def __repr__(self) -> str:
         return f"Player {self._id}"
@@ -76,8 +77,8 @@ class Player:
         if property not in self.properties:
             return Player.OwnershipError
 
-        if property.unmortgage(self.balance):
-            self.balance -= 1.1 * property.mortgage_value
+        if property.unmortgage():
+            self.balance -= int(1.1 * property.mortgage_value)
 
     def modify_balance(self, delta: int, force: bool = True):
         """Safe function used to modify the player's balance
@@ -93,7 +94,8 @@ class Player:
                 while self.balance + delta < 0:
                     self.manage()
                 return Ok
-            return ValueError("Insufficient value")
+            else:
+                return ValueError("Insufficient value")
         else:
             self.balance += delta
         return Ok
@@ -134,10 +136,7 @@ class Player:
 
     def pay_rent(self, rent_value: int):
         # TODO - according to official rules, the owner of the property must point out the player owes rent. Something to consider.
-        if self.balance < rent_value:
-            raise NotImplementedError
-        else:
-            self.balance -= rent_value
+        self.modify_balance(-rent_value)
 
     class OwnershipError(Result):
         default_message = "Property not owned by player."

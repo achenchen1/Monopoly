@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, List
 
-from MonopolyGame.Common import Game, Player
+from MonopolyGame.Common import Game, Player, Square
 
 
 class CmdLineGame(Game.Game):
@@ -67,11 +67,20 @@ class CmdLineGame(Game.Game):
         def list_properties(player: Player.Player) -> str:
             properties = []
             for p in sorted(player.properties, key=lambda x: x.id):
-                properties.append(CmdLineGame.font_formatter(p))
+                property_string = CmdLineGame.font_formatter(p)
+                if type(p) == Square.Property:
+                    if p.buildings <= 4:
+                        property_string += (
+                            f" \033[1;38;2;255;0;0m{'⌂'*p.buildings}\033[0m"
+                        )
+                    elif p.buildings == 5:
+                        property_string += f" \033[1;38;2;48;192;64m{'⌂'}\033[0m"
+                properties.append(property_string)
             return f"Properties: {', '.join(properties)}"
 
         for i, new_player in enumerate(new_players):
             new_player._hex_color = player_colors[i + offset]
+
         Player.Player.list_properties = list_properties
 
         return new_players
